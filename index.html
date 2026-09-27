@@ -89,8 +89,8 @@ body {
 .exec-header {
     color: #0d47a1;
     background: #e3f2fd;
-    padding: 4px 10px;
-    font-size: 13px;
+    padding: 5px 11px;
+    font-size: 14px;
     border-left: 3px solid #0d47a1;
     border-radius: 4px;
 }
@@ -98,8 +98,8 @@ body {
 .nonexec-header {
     color: #b71c1c;
     background: #ffebee;
-    padding: 4px 10px;
-    font-size: 13px;
+    padding: 5px 11px;
+    font-size: 14px;
     border-left: 3px solid #b71c1c;
     border-radius: 4px;
 }
@@ -185,15 +185,16 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     100% { opacity:1; }
 }
 
-.notice-bar {
-    margin-top: 6px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-    text-align: center;
+.notice-bar { 
+    margin-top: 6px; 
+    padding: 6px 10px; 
+    border-radius: 6px; 
+    font-weight: 500; 
+    text-align: center; 
+    font-size: 15px;
 
-    color: #0d47a1;
-    background: rgba(13, 71, 161, 0.1);
+    color: #0d47a1; 
+    background: rgba(13, 71, 161, 0.1); 
 }
 
 .next7-container {
@@ -421,6 +422,7 @@ body.dark .badge {
 
     <!-- ✅ ADDED NOTE HERE --> 
     <div id="todayNote" class="notice-bar"></div> 
+    <div id="dynamicNotice" class="notice-bar"></div>
 
     <div class="badge" id="todayShiftBadge">Loading...</div> 
 
@@ -494,11 +496,11 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v6";   // 🔁 update when CSV change
+const DATA_VERSION = "v7";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
-const notesUrl = "https://raw.githubusercontent.com/debajitd1292/ppu/beta/notes.csv?v=" + DATA_VERSION;
+const notesUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notes.csv?v=" + DATA_VERSION;
 const trainingUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/training.csv?v=" + DATA_VERSION;
 const nonExecUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/nonexec_shift.csv?v=" + DATA_VERSION;
 const noticeUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notice.csv?v=" + DATA_VERSION;
@@ -587,10 +589,10 @@ return {
 };
 });
 
-notes = notesText.split("\n").slice(1).map(r=>{
 parseNoticeCSV(noticeText);
-let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
-return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
+notes = notesText.split("\n").slice(1).map(r=>{
+    let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
+    return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
 });
 
 init();
@@ -898,6 +900,11 @@ function parseShift(shift){
 
 function parseNoticeCSV(text){
 
+    if(!text || text.trim() === ""){
+        noticeData = [];
+        return;
+    }
+
     let rows = text.trim().split("\n").map(r=>r.split(","));
 
     noticeData = rows.slice(1).map(r=>({
@@ -985,7 +992,6 @@ let shifts=getData(date);
 ["A","B","C","G","OFF","L","T"].forEach(s=>{
 
 let list=shifts[s]||[];
-if(list.length === 0) return;
 
 list = sortBySeniority(list.map(x=>x.name))
        .map(n => list.find(x=>x.name===n));
@@ -1031,24 +1037,33 @@ if(hasNonExec){
 
     ["A","B","C","G","OFF","L","T","D","N"].forEach(s=>{
 
-        let list = nonExecShifts[s] || [];
-        if(list.length === 0) return;
+    let list = nonExecShifts[s] || [];
 
-        list = list.sort((a,b)=>{
-            let ia = nonExecSeniorityOrder.indexOf(a.name);
-            let ib = nonExecSeniorityOrder.indexOf(b.name);
-            if(ia === -1) ia = 999;
-            if(ib === -1) ib = 999;
-            return ia - ib;
-        });
+    // ✅ Alert ONLY for A/B/C
+    let alert = "";
+    if(["A","B","C"].includes(s) && list.length === 0){
+        alert = " ❗";
+    }
 
-        let chips = list.map(obj=>{
-            let sel=(selectedName && obj.name===selectedName)?"selected":"";
-            return `<span class="chip ${s} ${sel}">${obj.name}</span>`;
-        }).join("");
+    // ✅ Skip rendering if no manpower AND no alert
+    if(list.length === 0 && alert === "") return;
 
-        box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
+    list = list.sort((a,b)=>{
+        let ia = nonExecSeniorityOrder.indexOf(a.name);
+        let ib = nonExecSeniorityOrder.indexOf(b.name);
+        if(ia === -1) ia = 999;
+        if(ib === -1) ib = 999;
+        return ia - ib;
     });
+
+    let chips = list.map(obj=>{
+        let sel=(selectedName && obj.name===selectedName)?"selected":"";
+        let multi = (["A","B","C"].includes(s.trim()) && obj.multi) ? " ❕" : "";
+        return `<span class="chip ${s} ${sel}">${obj.name}${multi}</span>`;
+    }).join("");
+
+    box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})${alert}</div>${chips || "-"}`;
+});
 }
 }
 function renderSelected(){
@@ -1074,7 +1089,7 @@ function renderDynamicNotice(){
         return now >= start && now <= end;
     });
 
-    let box = document.getElementById("todayNote");
+    let box = document.getElementById("dynamicNotice");
 
     if(!box) return;
 
@@ -1303,7 +1318,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=6')
+  navigator.serviceWorker.register('./service-worker.js?v=7')
     .then(() => console.log("Service Worker Registered"));
 }
 
