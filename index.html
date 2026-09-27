@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPU PolyOps Dashboard</title>
+<title>PPU Operations Dashboard</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d47a1">
@@ -91,7 +91,7 @@ body {
     background: #e3f2fd;
     padding: 5px 11px;
     font-size: 14px;
-    border-left: 3px solid #0d47a1;
+    border-left: 4px solid #0d47a1;
     border-radius: 4px;
 }
 
@@ -100,7 +100,7 @@ body {
     background: #ffebee;
     padding: 5px 11px;
     font-size: 14px;
-    border-left: 3px solid #b71c1c;
+    border-left: 4px solid #b71c1c;
     border-radius: 4px;
 }
 
@@ -183,6 +183,28 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     0% { opacity:1; }
     50% { opacity:0; }
     100% { opacity:1; }
+}
+
+/* 🔴 Red alert */
+.alert-red {
+    color: #b71c1c;
+    background: rgba(183, 28, 28, 0.1);
+    font-weight: 600;
+}
+
+/* 🔵 Notice */
+.notice-blue {
+    color: #0d47a1;
+    background: rgba(13, 71, 161, 0.1);
+}
+
+/* 🔁 Blinking */
+.blink {
+    animation: blinkAnim 1s infinite;
+}
+
+@keyframes blinkAnim {
+    50% { opacity: 0.3; }
 }
 
 .notice-bar { 
@@ -370,7 +392,7 @@ body.dark .header {
 body.dark .info-bar {
     background: linear-gradient(135deg, #0f172a, #020617);
     color: #e2e8f0;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: none;
 }
 
 body.dark .slider {
@@ -417,12 +439,12 @@ body.dark .badge {
      class="logo" 
      onload="this.style.opacity=1; this.style.transform='scale(1)'"> 
 
-    <h3>PPU PolyOps Dashboard</h3> 
+    <h3>PPU Operations Dashboard</h3> 
     <div id="todayDate"></div> 
 
     <!-- ✅ ADDED NOTE HERE --> 
-    <div id="todayNote" class="notice-bar"></div> 
-    <div id="dynamicNotice" class="notice-bar"></div>
+    <div id="todayNote" class="notice-bar"></div>
+    <div id="dynamicNotice" class="notice-bar"></div> 
 
     <div class="badge" id="todayShiftBadge">Loading...</div> 
 
@@ -443,6 +465,8 @@ body.dark .badge {
     <div><strong>Head of Department:</strong> Sh. Pradeep Rawat</div>
     <div><strong>Area In-charge:</strong> Sh. Manoj Kumar Haloi</div>
 </div>
+
+<div id="alertSection"></div>
 
 <div class="card">
 
@@ -496,7 +520,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v7";   // 🔁 update when CSV change
+const DATA_VERSION = "v8";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -768,9 +792,6 @@ if(savedName){
     document.getElementById("nameSelector").value = savedName;
 }
 
-/* SHOW NOTE */
-document.getElementById("todayNote").innerHTML = getTodayNote();
-
 // 🔴 Show alerts ABOVE TODAY title
 let alertBox = document.getElementById("todayAlert");
 let alerts = getActiveAlerts();
@@ -794,6 +815,7 @@ calcHoliday();
 renderTraining();
 renderNext7Days();
 renderDynamicNotice();
+renderAlerts();
 }
 
 function populateNames(){
@@ -954,6 +976,12 @@ function getNonExecData(date){
         let shift=nonExecData[i][col]?.trim();
         if(!shift) continue;
 
+        if(shift==="OFF"){
+        if(!shifts["OFF"]) shifts["OFF"]=[];
+        shifts["OFF"].push({name:name,multi:false});
+        continue;
+        }
+
         let isMulti = shift.length>1;
 
         parseShift(shift).forEach(s=>{
@@ -969,9 +997,12 @@ function render(id,date){
 
 console.log("Render called for:", id, date);
 let box=document.getElementById(id);
+let category = document.getElementById("categorySelector")?.value;
 box.innerHTML="";
 // ✅ Show Executive header only when rendering
-box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
+if(category === "exec"){
+    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
+}
 
 if(header.indexOf(date)===-1){
 
@@ -986,7 +1017,11 @@ if(header.indexOf(date)===-1){
     return;
 }
 
-let shifts=getData(date);
+let shifts = {};
+
+if(category === "exec"){
+    shifts = getData(date);
+}
 
 /* MAIN */
 ["A","B","C","G","OFF","L","T"].forEach(s=>{
@@ -1027,13 +1062,17 @@ box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div
 
 // ================= NON-EXEC (FIXED - SINGLE RENDER) =================
 
-let nonExecShifts = getNonExecData(date);
+let nonExecShifts = {};
+
+if(category === "nonexec"){
+    nonExecShifts = getNonExecData(date);
+}
 
 let hasNonExec = Object.keys(nonExecShifts).some(k => nonExecShifts[k]?.length);
 
 if(hasNonExec){
 
-    box.innerHTML += `<hr><div class="section-header nonexec-header">Non-Executive</div>`;
+    box.innerHTML += `<div class="section-header nonexec-header">Non-Executive</div>`;
 
     ["A","B","C","G","OFF","L","T","D","N"].forEach(s=>{
 
@@ -1100,6 +1139,25 @@ function renderDynamicNotice(){
         box.innerText = "";
         box.style.display = "none";
     }
+}
+
+function renderAlerts(){
+
+    let box = document.getElementById("alertSection");
+    if(!box) return;
+
+    let alerts = getActiveAlerts();
+
+    if(alerts.length === 0){
+        box.innerHTML = "";
+        return;
+    }
+
+    box.innerHTML = `
+        <div class="notice-bar alert-red blink">
+            ${alerts.join("<br>")}
+        </div>
+    `;
 }
 
 function renderTraining(){
@@ -1318,7 +1376,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=7')
+  navigator.serviceWorker.register('./service-worker.js?v=8')
     .then(() => console.log("Service Worker Registered"));
 }
 
