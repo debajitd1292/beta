@@ -400,6 +400,13 @@ body.dark .badge {
 
     <label>Select Category:</label>
     <select id="categorySelector" onchange="onCategoryChange()">
+
+    <option value="" disabled selected>Select Category</option>
+
+    <option value="exec">Executive</option>
+    <option value="nonexec">Non-Executive</option>
+
+    </select>
         <option value="exec">Executive</option>
         <option value="nonexec">Non-Executive</option>
     </select>
@@ -415,6 +422,10 @@ body.dark .badge {
     <div id="todayAlert"></div>
 
     <h3>Today's Shift</h3>
+
+    <!-- ✅ ADD THIS LINE -->
+    <div style="font-weight:bold; margin-top:5px;">Executive</div>
+
     <div id="today"></div>
 </div>
 
@@ -427,6 +438,7 @@ body.dark .badge {
     <input type="date" id="datePicker" onchange="renderSelected()"> 
 
     <!-- Shift Output -->
+    <div style="font-weight:bold; margin-top:5px;">Executive</div>
     <div id="selected" style="margin-top:10px;"></div> 
 
 </div>
@@ -447,7 +459,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v1";   // 🔁 update when CSV change
+const DATA_VERSION = "v2";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -746,7 +758,8 @@ renderNext7Days();
 function populateNames(){
 
 let sel=document.getElementById("nameSelector");
-let category = document.getElementById("categorySelector")?.value || "exec";
+let category = document.getElementById("categorySelector")?.value;
+if(!category) return;
 
 let names=[];
 
@@ -813,7 +826,8 @@ render("today", today);
 
 function getShift(date,name){
 
-    let category = document.getElementById("categorySelector")?.value || "exec";
+    let category = document.getElementById("categorySelector")?.value;
+    if(!category) return null;
 
     let localData = (category === "exec") ? data : nonExecData;
     let localHeader = (category === "exec") ? header : nonExecHeader;
@@ -937,7 +951,22 @@ box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})${ale
 /* D N */
 ["D","N"].forEach(s=>{
 
-// ================= NON-EXEC =================
+let list=shifts[s]||[];
+if(list.length===0) return;
+
+list = sortBySeniority(list.map(x=>x.name))
+       .map(n => list.find(x=>x.name===n));
+
+let chips=list.map(obj=>{
+let sel=(selectedName && obj.name===selectedName)?"selected":"";
+let multi=obj.multi?" ❕":"";
+return `<span class="chip ${s} ${sel}">${obj.name}${multi}</span>`;
+}).join("");
+
+box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
+});
+
+// ================= NON-EXEC (FIXED - SINGLE RENDER) =================
 
 let nonExecShifts = getNonExecData(date);
 
@@ -967,22 +996,6 @@ if(hasNonExec){
 
         box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
     });
-}
-
-let list=shifts[s]||[];
-if(list.length===0) return;
-
-list = sortBySeniority(list.map(x=>x.name))
-       .map(n => list.find(x=>x.name===n));
-
-let chips=list.map(obj=>{
-let sel=(selectedName && obj.name===selectedName)?"selected":"";
-let multi=obj.multi?" ❕":"";
-return `<span class="chip ${s} ${sel}">${obj.name}${multi}</span>`;
-}).join("");
-
-box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
-});
 }
 
 function renderSelected(){
@@ -1202,7 +1215,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=1')
+  navigator.serviceWorker.register('./service-worker.js?v=2')
     .then(() => console.log("Service Worker Registered"));
 }
 
