@@ -71,6 +71,9 @@ body {
     flex-direction: column;
     gap: 4px;
 
+    align-items: center;
+    text-align: center;
+
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
@@ -85,13 +88,20 @@ body {
 /* Executive style */
 .exec-header {
     color: #0d47a1;
-    background: rgba(13, 71, 161, 0.1);
+    background: #e3f2fd;
+    padding: 4px 10px;
+    font-size: 13px;
+    border-left: 3px solid #0d47a1;
+    border-radius: 4px;
 }
 
-/* Non-Executive style */
 .nonexec-header {
     color: #b71c1c;
-    background: rgba(183, 28, 28, 0.1);
+    background: #ffebee;
+    padding: 4px 10px;
+    font-size: 13px;
+    border-left: 3px solid #b71c1c;
+    border-radius: 4px;
 }
 
 .card {
@@ -173,6 +183,17 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     0% { opacity:1; }
     50% { opacity:0; }
     100% { opacity:1; }
+}
+
+.notice-bar {
+    margin-top: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    text-align: center;
+
+    color: #0d47a1;
+    background: rgba(13, 71, 161, 0.1);
 }
 
 .next7-container {
@@ -372,6 +393,11 @@ body.dark .footer {
     color:#94a3b8;
 }
 
+body.dark .notice-bar {
+    color: #90caf9;
+    background: rgba(144, 202, 249, 0.15);
+}
+
 /* Keep shift colors intact */
 body.dark .chip {
     opacity:0.95;
@@ -394,7 +420,7 @@ body.dark .badge {
     <div id="todayDate"></div> 
 
     <!-- ✅ ADDED NOTE HERE --> 
-    <div id="todayNote" style="margin-top:5px;font-weight:bold;"></div> 
+    <div id="todayNote" class="notice-bar"></div> 
 
     <div class="badge" id="todayShiftBadge">Loading...</div> 
 
@@ -412,8 +438,8 @@ body.dark .badge {
 </div>
 
 <div class="info-bar">
-    <div><strong>HOD:</strong> Sh. Pradeep Rawat</div>
-    <div><strong>AIC:</strong> Sh. Manoj Kumar Haloi</div>
+    <div><strong>Head of Department:</strong> Sh. Pradeep Rawat</div>
+    <div><strong>Area In-charge:</strong> Sh. Manoj Kumar Haloi</div>
 </div>
 
 <div class="card">
@@ -468,13 +494,14 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v5";   // 🔁 update when CSV change
+const DATA_VERSION = "v6";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
-const notesUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notes.csv?v=" + DATA_VERSION;
+const notesUrl = "https://raw.githubusercontent.com/debajitd1292/ppu/beta/notes.csv?v=" + DATA_VERSION;
 const trainingUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/training.csv?v=" + DATA_VERSION;
 const nonExecUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/nonexec_shift.csv?v=" + DATA_VERSION;
+const noticeUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notice.csv?v=" + DATA_VERSION;
 
 let data = [];
 let holidays = [];
@@ -484,9 +511,10 @@ let trainings = [];
 let header = [];
 let nonExecData = [];
 let nonExecHeader = [];
+let noticeData = [];
 
 const nonExecSeniorityOrder = [
-    "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib"
+    "Lalit","Achyut","Bidyut","Shashadhar","Pranjal","Diganta","Akib"
 ];
 
 const seniorityOrder = [
@@ -517,8 +545,9 @@ Promise.all([
   fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
+  fetch(noticeUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
-]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
+]).then(([shiftText, holidayText, notesText, trainingText, noticeText, nonExecText]) => {
 
 if(!shiftText || shiftText.trim() === ""){
     document.getElementById("today").innerHTML =
@@ -559,6 +588,7 @@ return {
 });
 
 notes = notesText.split("\n").slice(1).map(r=>{
+parseNoticeCSV(noticeText);
 let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
 return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
 });
@@ -761,6 +791,7 @@ refresh();
 calcHoliday();
 renderTraining();
 renderNext7Days();
+renderDynamicNotice();
 }
 
 function populateNames(){
@@ -863,6 +894,17 @@ function parseShift(shift){
 
     // ✅ Split A, B, C, etc.
     return shift.match(/[A-Z]/g) || [];
+}
+
+function parseNoticeCSV(text){
+
+    let rows = text.trim().split("\n").map(r=>r.split(","));
+
+    noticeData = rows.slice(1).map(r=>({
+        message: r[0],
+        start: r[1] + "T" + r[2],
+        end: r[3] + "T" + r[4]
+    }));
 }
 
 function getData(date){
@@ -1020,6 +1062,29 @@ document.getElementById("selectedTitle").innerText =
 "Selected Date Shift ("+formatted+")";
 
 render("selected",formatted);
+}
+
+function renderDynamicNotice(){
+
+    let now = new Date();
+
+    let active = noticeData.filter(n=>{
+        let start = new Date(n.start);
+        let end = new Date(n.end);
+        return now >= start && now <= end;
+    });
+
+    let box = document.getElementById("todayNote");
+
+    if(!box) return;
+
+    if(active.length){
+        box.innerText = active.map(n=>n.message).join(" | ");
+        box.style.display = "block";
+    } else {
+        box.innerText = "";
+        box.style.display = "none";
+    }
 }
 
 function renderTraining(){
@@ -1238,7 +1303,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=5')
+  navigator.serviceWorker.register('./service-worker.js?v=6')
     .then(() => console.log("Service Worker Registered"));
 }
 
