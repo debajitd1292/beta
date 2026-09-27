@@ -74,6 +74,26 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+.section-header {
+    font-weight: bold;
+    margin-top: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Executive style */
+.exec-header {
+    color: #0d47a1;
+    background: rgba(13, 71, 161, 0.1);
+}
+
+/* Non-Executive style */
+.nonexec-header {
+    color: #b71c1c;
+    background: rgba(183, 28, 28, 0.1);
+}
+
 .card {
     background:white;
     margin:10px;
@@ -416,10 +436,6 @@ body.dark .badge {
     <div id="todayAlert"></div>
 
     <h3>Today's Shift</h3>
-
-    <!-- ✅ ADD THIS LINE -->
-    <div style="font-weight:bold; margin-top:5px;">Executive</div>
-
     <div id="today"></div>
 </div>
 
@@ -432,7 +448,6 @@ body.dark .badge {
     <input type="date" id="datePicker" onchange="renderSelected()"> 
 
     <!-- Shift Output -->
-    <div style="font-weight:bold; margin-top:5px;">Executive</div>
     <div id="selected" style="margin-top:10px;"></div> 
 
 </div>
@@ -453,7 +468,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v3";   // 🔁 update when CSV change
+const DATA_VERSION = "v4";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -902,8 +917,11 @@ function getNonExecData(date){
 
 function render(id,date){
 
+console.log("Render called for:", id, date);
 let box=document.getElementById(id);
 box.innerHTML="";
+// ✅ Show Executive header only when rendering
+box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
 
 if(header.indexOf(date)===-1){
 
@@ -966,7 +984,7 @@ let hasNonExec = Object.keys(nonExecShifts).some(k => nonExecShifts[k]?.length);
 
 if(hasNonExec){
 
-    box.innerHTML += `<hr><div style="font-weight:bold;margin-top:10px;">Non-Executive</div>`;
+    box.innerHTML += `<hr><div class="section-header nonexec-header">Non-Executive</div>`;
 
     ["A","B","C","G","OFF","L","T","D","N"].forEach(s=>{
 
@@ -1216,7 +1234,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=3')
+  navigator.serviceWorker.register('./service-worker.js?v=4')
     .then(() => console.log("Service Worker Registered"));
 }
 
