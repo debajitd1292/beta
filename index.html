@@ -17,7 +17,7 @@ body {
 }
 
 .header { 
-    background:#1f4e79; 
+    background: linear-gradient(135deg, #1f4e79, #163a5f); 
     color:white; 
     text-align:center; 
     padding:15px 10px; 
@@ -207,16 +207,59 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     50% { opacity: 0.3; }
 }
 
-.notice-bar { 
-    margin-top: 6px; 
-    padding: 6px 10px; 
-    border-radius: 6px; 
-    font-weight: 500; 
-    text-align: center; 
-    font-size: 15px;
+.notify-container {
+    margin: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-    color: #0d47a1; 
-    background: rgba(13, 71, 161, 0.1); 
+/* Card */
+.notice-bar {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+
+    background: #ffffff;
+    color: #1f2937;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.notice-general {
+    border-left: 4px solid #2563eb;
+    color: #1e40af;
+}
+
+.notice-birthday {
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+}
+
+.notice-critical {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: white;
+}
+
+/* Dark mode */
+body.dark .notice-bar {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #e2e8f0;
+}
+
+/* Soft animation */
+@keyframes softPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.015); }
+    100% { transform: scale(1); }
+}
+
+.notify-active .notice-bar {
+    animation: softPulse 2.5s ease-in-out infinite;
 }
 
 .next7-container {
@@ -416,11 +459,6 @@ body.dark .footer {
     color:#94a3b8;
 }
 
-body.dark .notice-bar {
-    color: #90caf9;
-    background: rgba(144, 202, 249, 0.15);
-}
-
 /* Keep shift colors intact */
 body.dark .chip {
     opacity:0.95;
@@ -443,8 +481,7 @@ body.dark .badge {
     <div id="todayDate"></div> 
 
     <!-- ✅ ADDED NOTE HERE --> 
-    <div id="todayNote" class="notice-bar" style="display:none;"></div>
-    <div id="dynamicNotice" class="notice-bar"></div> 
+    <div id="todayNote" class="notice-bar" style="display:none;"></div> 
 
     <div class="badge" id="todayShiftBadge">Loading...</div> 
 
@@ -452,6 +489,8 @@ body.dark .badge {
         Next GH: <span id="nextGH"></span> | 
         Next RH: <span id="nextRH"></span> 
     </div> 
+
+<div id="notificationBar" class="notify-container" style="display:none;"></div>
 
     <!-- 🌙 DARK MODE TOGGLE (ADD THIS) -->
     <div id="themeToggle" class="theme-switch">
@@ -520,7 +559,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v9";   // 🔁 update when CSV change
+const DATA_VERSION = "v10";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -824,7 +863,7 @@ refresh();
 calcHoliday();
 renderTraining();
 renderNext7Days();
-renderDynamicNotice();
+renderNotifications();
 }
 
 function populateNames(){
@@ -1114,6 +1153,7 @@ if(hasNonExec){
 });
 }
 }
+
 function renderSelected(){
 let val=document.getElementById("datePicker").value;
 if(!val) return;
@@ -1366,7 +1406,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=9')
+  navigator.serviceWorker.register('./service-worker.js?v=10')
     .then(() => console.log("Service Worker Registered"));
 }
 
@@ -1393,6 +1433,60 @@ document.addEventListener("DOMContentLoaded", function(){
     refresh();
     renderNext7Days();
 });
+
+function renderNotifications(){
+
+    let box = document.getElementById("notificationBar");
+    if(!box) return;
+
+    let html = "";
+
+    // 🔴 Alerts
+    let alerts = getActiveAlerts();
+    if(alerts.length){
+        html += `
+        <div class="notice-bar notice-critical">
+            ⚠ ${alerts.join("<br>")}
+        </div>`;
+    }
+
+    // 🔵 Dynamic Notices
+    let now = new Date();
+    let activeNotice = noticeData.filter(n=>{
+        let start = new Date(n.start);
+        let end = new Date(n.end);
+        return now >= start && now <= end;
+    });
+
+    if(activeNotice.length){
+        html += `
+        <div class="notice-bar notice-general">
+            📢 ${activeNotice.map(n=>n.message).join(" | ")}
+        </div>`;
+    }
+
+    // 🟡 Birthday / Notes
+    let note = getTodayNote();
+
+    if(note){
+        note = note.replace(/🎂/g,"").trim();
+
+        html += `
+        <div class="notice-bar notice-birthday">
+            🎂 ${note}
+        </div>`;
+    }
+
+    // ✅ Show / Hide + Animation
+    if(html.trim() === ""){
+        box.style.display = "none";
+        box.classList.remove("notify-active");
+    } else {
+        box.style.display = "flex";
+        box.innerHTML = html;
+        box.classList.add("notify-active");
+    }
+}
 
 </script>
 
