@@ -16,17 +16,46 @@ body {
     overflow-x: hidden;
 }
 
-.header { 
-    background: linear-gradient(135deg, #1f4e79, #163a5f); 
-    color:white; 
-    text-align:center; 
-    padding:15px 10px; 
-
-    position: sticky; 
-    top: 0; 
+.header {
+    position: sticky;
+    top: 0;
     z-index: 1000;
 
+    padding: 18px 12px;
+
+    /* Premium gradient */
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+
+    /* Glass effect */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Subtle border */
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+
+    /* Depth shadow */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+
+    text-align: center;
+    color: #e2e8f0;
+
     overflow-x: hidden;
+}
+
+#todayDate {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 4px;
+}
+
+.header h3 {
+    margin: 6px 0 4px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+
+    /* subtle glow */
+    text-shadow: 0 0 8px rgba(255,255,255,0.15);
 }
 
 .holiday-text {
@@ -51,15 +80,22 @@ body {
 
 .badge {
     display:inline-block;
-    background:#c2185b;
     padding:6px 14px;
     border-radius:20px;
     margin:8px 0;
     font-weight:bold;
     font-size:14px;
+
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+
+    box-shadow: 
+        0 2px 6px rgba(0,0,0,0.3),
+        inset 0 1px 2px rgba(255,255,255,0.2);
+
+    border: 1px solid rgba(255,255,255,0.15);
 }
 
-.info-bar {
+.info-bar {			/* ✅ HOD/AIC */
     background: linear-gradient(135deg, #1f4e79, #163a5f);
     color: white;
     margin: 10px;
@@ -71,37 +107,46 @@ body {
     flex-direction: column;
     gap: 4px;
 
-    align-items: center;
+    align-items: center;     
     text-align: center;
 
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.section-header {
-    font-weight: bold;
-    margin-top: 10px;
-    padding: 6px 10px;
-    border-radius: 6px;
+.info-bar div {			/* ✅ HOD/AIC */
+    width: 100%;
+}
+
+.section-header {		/* ✅ Exec/Non Exec */
     display: inline-block;
+    padding: 6px 14px;
+    margin: 12px 0 8px 0;
+
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+
+    border-radius: 999px; /* pill shape */
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
+    border: 1px solid rgba(255,255,255,0.2);
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* Executive style */
-.exec-header {
+.exec-header {			/* ✅ Exec */
     color: #0d47a1;
-    background: #e3f2fd;
-    padding: 5px 11px;
-    font-size: 14px;
-    border-left: 4px solid #0d47a1;
-    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(13,71,161,0.15), rgba(13,71,161,0.05));
+    border: 1px solid rgba(13,71,161,0.3);
 }
 
-.nonexec-header {
+.nonexec-header {		/* ✅ Non Exec */
     color: #b71c1c;
-    background: #ffebee;
-    padding: 5px 11px;
-    font-size: 14px;
-    border-left: 4px solid #b71c1c;
-    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(183,28,28,0.15), rgba(183,28,28,0.05));
+    border: 1px solid rgba(183,28,28,0.3);
 }
 
 .card {
@@ -142,9 +187,20 @@ select:focus, input:focus {
 .selected { border:2px solid gold; }
 
 /* COLORS */
-.A { background:#8e24aa; }
-.B { background:#ff9800; }
-.C { background:#1e40ff; }
+.A { 
+    background: linear-gradient(135deg, #9333ea, #6b21a8);
+    box-shadow: 0 2px 6px rgba(147,51,234,0.4);
+}
+
+.B { 
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    box-shadow: 0 2px 6px rgba(245,158,11,0.4);
+}
+
+.C { 
+    background: linear-gradient(135deg, #2563eb, #1e3a8a);
+    box-shadow: 0 2px 6px rgba(37,99,235,0.4);
+}
 .G { background:#e53935; }
 .OFF { background:#1b5e20; }
 
@@ -154,9 +210,20 @@ select:focus, input:focus {
 .T { background:#00acc1; color:black; }
 
 /* Badge dynamic colors */
-.badge.A { background:#8e24aa; }
-.badge.B { background:#ff9800; }
-.badge.C { background:#1e40ff; }
+.badge.A { 
+    background: linear-gradient(135deg, #9333ea, #6b21a8);
+    box-shadow: 0 0 10px rgba(147,51,234,0.5);
+}
+
+.badge.B { 
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    box-shadow: 0 0 10px rgba(245,158,11,0.5);
+}
+
+.badge.C { 
+    background: linear-gradient(135deg, #2563eb, #1e3a8a);
+    box-shadow: 0 0 10px rgba(37,99,235,0.5);
+}
 .badge.G { background:#e53935; }
 .badge.OFF { background:#1b5e20; }
 
@@ -166,6 +233,23 @@ select:focus, input:focus {
 body.dark .badge.N { background:#9ca3af; color:black; }
 .badge.L { background:#ffd600; color:black; }
 .badge.T { background:#00acc1; color:black; }
+
+.chip.selected {
+    box-shadow: 
+        0 0 8px rgba(255,255,255,0.6),
+        0 0 14px rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+/* Smooth hover effect */
+.chip {
+    transition: all 0.2s ease;
+}
+
+.chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
 
 .footer {
     text-align:center;
@@ -179,85 +263,49 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     color: white;
 }
 
-@keyframes blink {
+.notice-alert {			/* ✅ Alerts */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 10px 14px;
+    margin-bottom: 12px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+
+    color: #b71c1c;
+
+    background: linear-gradient(135deg, #fdecea, #f8d7da);
+    border: 1px solid rgba(183, 28, 28, 0.3);
+
+    box-shadow: 0 4px 10px rgba(183,28,28,0.15);
+
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {		/* ✅ Alerts */
+    0%   { box-shadow: 0 0 6px rgba(183,28,28,0.2); }
+    50%  { box-shadow: 0 0 16px rgba(183,28,28,0.5); }
+    100% { box-shadow: 0 0 6px rgba(183,28,28,0.2); }
+}
+
+@keyframes blink {		/* ✅ Alerts Global */
     0% { opacity:1; }
     50% { opacity:0; }
     100% { opacity:1; }
 }
 
-/* 🔴 Red alert */
-.alert-red {
-    color: #b71c1c;
-    background: rgba(183, 28, 28, 0.1);
-    font-weight: 600;
-}
-
-/* 🔵 Notice */
-.notice-blue {
-    color: #0d47a1;
-    background: rgba(13, 71, 161, 0.1);
-}
-
-.notify-container {
-    margin: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Card */
-.notice-bar {
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    text-align: center;
-
-    background: #ffffff;
-    color: #1f2937;
-
-    border: 1px solid #e5e7eb;
-
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-}
-
-.notice-general {
-    border-left: 4px solid #2563eb;
-    color: #1e40af;
-}
-
-.notice-birthday {
-    border-left: 4px solid #f59e0b;
-    color: #92400e;
-}
-
-.notice-critical {
-    background: linear-gradient(135deg, #dc2626, #ef4444);
-    color: white;
-}
-
-/* Dark mode */
-body.dark .notice-bar {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    color: #e2e8f0;
-}
-
-/* Soft animation */
-@keyframes softPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.015); }
-    100% { transform: scale(1); }
-}
-
-.notify-active .notice-bar {
-    animation: softPulse 2.5s ease-in-out infinite;
-}
-
 .next7-container {
-    display:flex;
-    justify-content:space-between;
-    gap:4px;
-    padding:6px 8px;
+    display: flex;
+    gap: 8px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
 }
 
 .day-card {
@@ -426,7 +474,7 @@ body.dark .header {
 body.dark .info-bar {
     background: linear-gradient(135deg, #0f172a, #020617);
     color: #e2e8f0;
-    border: none;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 body.dark .slider {
@@ -437,6 +485,32 @@ body.dark .card {
     background: #1e1e1e;
     border: 1px solid rgba(255,255,255,0.15);
     box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+body.dark .section-header {		/* ✅ DARK Exec/Non Exec */
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+body.dark .exec-header {		/* ✅ DARK Exec */
+    color: #90caf9;
+    background: linear-gradient(135deg, rgba(30,64,255,0.25), rgba(30,64,255,0.1));
+    border: 1px solid rgba(144,202,249,0.4);
+}
+
+body.dark .nonexec-header {		/* ✅ DARK Non Exec */
+    color: #ef9a9a;
+    background: linear-gradient(135deg, rgba(183,28,28,0.3), rgba(183,28,28,0.1));
+    border: 1px solid rgba(239,154,154,0.4);
+}
+
+body.dark .notice-alert {		/* ✅ DARK Alerts */
+    color: #ff8a80;
+
+    background: linear-gradient(135deg, #3b0a0a, #1f0a0a);
+    border: 1px solid rgba(255,138,128,0.4);
+
+    box-shadow: 0 4px 14px rgba(0,0,0,0.7);
 }
 
 body.dark input,
@@ -471,14 +545,15 @@ body.dark .badge {
     <h3>PPU Operations Dashboard</h3> 
     <div id="todayDate"></div> 
 
+    <!-- ✅ ADDED NOTE HERE --> 
+    <div id="todayNote" style="margin-top:5px;font-weight:bold;"></div> 
+
     <div class="badge" id="todayShiftBadge">Loading...</div> 
 
     <div class="holiday-text"> 
         Next GH: <span id="nextGH"></span> | 
         Next RH: <span id="nextRH"></span> 
     </div> 
-
-<div id="notificationBar" class="notify-container" style="display:none;"></div>
 
     <!-- 🌙 DARK MODE TOGGLE (ADD THIS) -->
     <div id="themeToggle" class="theme-switch">
@@ -492,8 +567,6 @@ body.dark .badge {
     <div><strong>Head of Department:</strong> Sh. Pradeep Rawat</div>
     <div><strong>Area In-charge:</strong> Sh. Manoj Kumar Haloi</div>
 </div>
-
-<div id="alertSection"></div>
 
 <div class="card">
 
@@ -510,6 +583,9 @@ body.dark .badge {
 </div>
 
 <div class="card">
+
+    <!-- 🔴 ALERT ABOVE TITLE -->
+    <div id="todayAlert"></div>
 
     <h3>Today's Shift</h3>
     <div id="today"></div>
@@ -539,7 +615,7 @@ body.dark .badge {
 </div>
 
 <div class="footer">
-    © 2026 • Developed by DD
+    © 2026 • Developed by DebajitD
 </div>
 
 <script>
@@ -551,7 +627,6 @@ const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/hol
 const notesUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notes.csv?v=" + DATA_VERSION;
 const trainingUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/training.csv?v=" + DATA_VERSION;
 const nonExecUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/nonexec_shift.csv?v=" + DATA_VERSION;
-const noticeUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notice.csv?v=" + DATA_VERSION;
 
 let data = [];
 let holidays = [];
@@ -561,10 +636,9 @@ let trainings = [];
 let header = [];
 let nonExecData = [];
 let nonExecHeader = [];
-let noticeData = [];
 
 const nonExecSeniorityOrder = [
-    "Lalit","Achyut","Bidyut","Shashadhar","Pranjal","Diganta","Akib"
+    "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib"
 ];
 
 const seniorityOrder = [
@@ -595,9 +669,8 @@ Promise.all([
   fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(noticeUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
-]).then(([shiftText, holidayText, notesText, trainingText, noticeText, nonExecText]) => {
+]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
 
 if(!shiftText || shiftText.trim() === ""){
     document.getElementById("today").innerHTML =
@@ -612,6 +685,8 @@ if(!trainingText) trainingText = "";
 data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
 
 header = data[0].map(x => x.trim());
+
+nonExecText = nonExecText || "";
 
 nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
 nonExecHeader = nonExecData[0]?.map(x => x.trim()) || [];
@@ -637,10 +712,9 @@ return {
 };
 });
 
-parseNoticeCSV(noticeText);
 notes = notesText.split("\n").slice(1).map(r=>{
-    let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
-    return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
+let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
+return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
 });
 
 init();
@@ -702,6 +776,36 @@ if(isGH || isRH) return true;
 return false;
 }
 
+// 🔴 CUSTOM ALERTS CONFIG (ADD HERE)
+const customAlerts = [
+
+    // ✅ WEEKLY ALERT (Every Thursday 9 AM – 4 PM)
+    {
+    dayOfWeek: 4,   // 0=Sun, 1=Mon ... 4=Thu
+    fromHour: 9,
+    toHour: 16,
+    text: "Weekly Operations Review Meeting<br>CCR Conference Room at 3 PM",
+    repeat: "weekly"
+    },
+
+    // ✅ YEARLY ALERT (Example: PMS Filling)
+    {
+        from: { day: 1, month: 4, hour: 0, min: 0 },
+        to:   { day: 10, month: 4, hour: 23, min: 59 },
+        text: "Reminder: PMS Filing to be completed by 10 April",
+        repeat: "yearly"
+    },
+
+    // ✅ ONE-TIME ALERT (Example: 10 Oct 2026, 14:00–18:00)
+    {
+        from: new Date(2026, 9, 28, 9, 0),   // YYYY MM DD HR MIN
+        to:   new Date(2026, 9, 28, 17, 0),
+        text: "Operations Meeting at CCR Conference Room at 3 PM",
+        repeat: "once"
+    }
+
+];
+
 function getActiveAlerts(){
 
     let now = new Date();
@@ -716,7 +820,7 @@ function getActiveAlerts(){
     // 🔴 1. Monthly Reset Alert (Last day 2PM → 1st 6AM)
     let lastDay = new Date(year, month + 1, 0).getDate();
 
-    if((date === lastDay && hours >= 9) || (date === 1 && hours < 6)){
+    if((date === lastDay && hours >= 14) || (date === 1 && hours < 6)){
         alerts.push("Reset Totalizers & Pump Running Hours<br>along with Blending Silo Changeover at 06:00 hrs");
     }
 
@@ -724,6 +828,59 @@ function getActiveAlerts(){
     if(date >= 19 && date <= 21){
         alerts.push("Update/Sign Attendance Register");
     }
+    // 🔴 3 & 4. Custom Alerts (Yearly + One-time)
+
+    customAlerts.forEach(a => {
+
+    if(a.repeat === "yearly"){
+
+        let from = new Date(
+            year,
+            a.from.month - 1,
+            a.from.day,
+            a.from.hour,
+            a.from.min
+        );
+
+        let to = new Date(
+            year,
+            a.to.month - 1,
+            a.to.day,
+            a.to.hour,
+            a.to.min
+        );
+
+        if(now >= from && now <= to){
+            alerts.push(a.text);
+        }
+
+    } 
+    else if(a.repeat === "once"){
+
+        if(now >= a.from && now <= a.to){
+            alerts.push(a.text);
+        }
+
+    } 
+    else if(a.repeat === "weekly"){
+
+        let currentDay = now.getDay();   // 0–6
+        let currentMinutes = now.getHours()*60 + now.getMinutes();
+
+        let fromMinutes = a.fromHour * 60;
+        let toMinutes   = a.toHour * 60;
+
+        if(
+            currentDay === a.dayOfWeek &&
+            currentMinutes >= fromMinutes &&
+            currentMinutes <= toMinutes
+        ){
+            alerts.push(a.text);
+        }
+
+    }
+
+});
 
     return alerts;
 }
@@ -816,18 +973,17 @@ if(savedName){
     document.getElementById("nameSelector").value = savedName;
 }
 
+/* SHOW NOTE */
+document.getElementById("todayNote").innerHTML = getTodayNote();
+
+// 🔴 Show alerts ABOVE TODAY title
+let alertBox = document.getElementById("todayAlert");
 let alerts = getActiveAlerts();
 
 if(alerts.length > 0){
     alertBox.innerHTML = `
-    <div style="
-        text-align:center;
-        color:red;
-        font-weight:bold;
-        margin-bottom:10px;
-        animation: blink 1s infinite;
-    ">
-    ${alerts.join("<br>")}
+    <div class="notice-alert">
+        ⚠ ${alerts.join(" | ")}
     </div>
     `;
 }
@@ -836,7 +992,6 @@ refresh();
 calcHoliday();
 renderTraining();
 renderNext7Days();
-renderNotifications();
 }
 
 function populateNames(){
@@ -941,22 +1096,6 @@ function parseShift(shift){
     return shift.match(/[A-Z]/g) || [];
 }
 
-function parseNoticeCSV(text){
-
-    if(!text || text.trim() === ""){
-        noticeData = [];
-        return;
-    }
-
-    let rows = text.trim().split("\n").map(r=>r.split(","));
-
-    noticeData = rows.slice(1).map(r=>({
-        message: r[0],
-        start: r[1] + "T" + r[2],
-        end: r[3] + "T" + r[4]
-    }));
-}
-
 function getData(date){
 let col = header.indexOf(date);
 if(col === -1) return {};
@@ -997,12 +1136,6 @@ function getNonExecData(date){
         let shift=nonExecData[i][col]?.trim();
         if(!shift) continue;
 
-        if(shift==="OFF"){
-        if(!shifts["OFF"]) shifts["OFF"]=[];
-        shifts["OFF"].push({name:name,multi:false});
-        continue;
-        }
-
         let isMulti = shift.length>1;
 
         parseShift(shift).forEach(s=>{
@@ -1018,12 +1151,9 @@ function render(id,date){
 
 console.log("Render called for:", id, date);
 let box=document.getElementById(id);
-let category = document.getElementById("categorySelector")?.value;
 box.innerHTML="";
 // ✅ Show Executive header only when rendering
-if(category === "exec"){
-    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
-}
+box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
 
 if(header.indexOf(date)===-1){
 
@@ -1038,16 +1168,13 @@ if(header.indexOf(date)===-1){
     return;
 }
 
-let shifts = {};
-
-if(category === "exec"){
-    shifts = getData(date);
-}
+let shifts=getData(date);
 
 /* MAIN */
 ["A","B","C","G","OFF","L","T"].forEach(s=>{
 
 let list=shifts[s]||[];
+if(list.length === 0) return;
 
 list = sortBySeniority(list.map(x=>x.name))
        .map(n => list.find(x=>x.name===n));
@@ -1083,50 +1210,36 @@ box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div
 
 // ================= NON-EXEC (FIXED - SINGLE RENDER) =================
 
-let nonExecShifts = {};
-
-if(category === "nonexec"){
-    nonExecShifts = getNonExecData(date);
-}
+let nonExecShifts = getNonExecData(date);
 
 let hasNonExec = Object.keys(nonExecShifts).some(k => nonExecShifts[k]?.length);
 
 if(hasNonExec){
 
-    box.innerHTML += `<div class="section-header nonexec-header">Non-Executive</div>`;
+    box.innerHTML += `<hr><div class="section-header nonexec-header">Non-Executive</div>`;
 
     ["A","B","C","G","OFF","L","T","D","N"].forEach(s=>{
 
-    let list = nonExecShifts[s] || [];
+        let list = nonExecShifts[s] || [];
+        if(list.length === 0) return;
 
-    // ✅ Alert ONLY for A/B/C
-    let alert = "";
-    if(["A","B","C"].includes(s) && list.length === 0){
-        alert = " ❗";
-    }
+        list = list.sort((a,b)=>{
+            let ia = nonExecSeniorityOrder.indexOf(a.name);
+            let ib = nonExecSeniorityOrder.indexOf(b.name);
+            if(ia === -1) ia = 999;
+            if(ib === -1) ib = 999;
+            return ia - ib;
+        });
 
-    // ✅ Skip rendering if no manpower AND no alert
-    if(list.length === 0 && alert === "") return;
+        let chips = list.map(obj=>{
+            let sel=(selectedName && obj.name===selectedName)?"selected":"";
+            return `<span class="chip ${s} ${sel}">${obj.name}</span>`;
+        }).join("");
 
-    list = list.sort((a,b)=>{
-        let ia = nonExecSeniorityOrder.indexOf(a.name);
-        let ib = nonExecSeniorityOrder.indexOf(b.name);
-        if(ia === -1) ia = 999;
-        if(ib === -1) ib = 999;
-        return ia - ib;
+        box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
     });
-
-    let chips = list.map(obj=>{
-        let sel=(selectedName && obj.name===selectedName)?"selected":"";
-        let multi = (["A","B","C"].includes(s.trim()) && obj.multi) ? " ❕" : "";
-        return `<span class="chip ${s} ${sel}">${obj.name}${multi}</span>`;
-    }).join("");
-
-    box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})${alert}</div>${chips || "-"}`;
-});
 }
 }
-
 function renderSelected(){
 let val=document.getElementById("datePicker").value;
 if(!val) return;
@@ -1138,29 +1251,6 @@ document.getElementById("selectedTitle").innerText =
 "Selected Date Shift ("+formatted+")";
 
 render("selected",formatted);
-}
-
-function renderDynamicNotice(){
-
-    let now = new Date();
-
-    let active = noticeData.filter(n=>{
-        let start = new Date(n.start);
-        let end = new Date(n.end);
-        return now >= start && now <= end;
-    });
-
-    let box = document.getElementById("dynamicNotice");
-
-    if(!box) return;
-
-    if(active.length){
-        box.innerText = active.map(n=>n.message).join(" | ");
-        box.style.display = "block";
-    } else {
-        box.innerText = "";
-        box.style.display = "none";
-    }
 }
 
 function renderTraining(){
@@ -1406,60 +1496,6 @@ document.addEventListener("DOMContentLoaded", function(){
     refresh();
     renderNext7Days();
 });
-
-function renderNotifications(){
-
-    let box = document.getElementById("notificationBar");
-    if(!box) return;
-
-    let html = "";
-
-    // 🔴 Alerts
-    let alerts = getActiveAlerts();
-    if(alerts.length){
-        html += `
-        <div class="notice-bar notice-critical">
-            ⚠ ${alerts.join("<br>")}
-        </div>`;
-    }
-
-    // 🔵 Dynamic Notices
-    let now = new Date();
-    let activeNotice = noticeData.filter(n=>{
-        let start = new Date(n.start);
-        let end = new Date(n.end);
-        return now >= start && now <= end;
-    });
-
-    if(activeNotice.length){
-        html += `
-        <div class="notice-bar notice-general">
-            📢 ${activeNotice.map(n=>n.message).join(" | ")}
-        </div>`;
-    }
-
-    // 🟡 Birthday / Notes
-    let note = getTodayNote();
-
-    if(note){
-        note = note.replace(/🎂/g,"").trim();
-
-        html += `
-        <div class="notice-bar notice-birthday">
-            🎂 ${note}
-        </div>`;
-    }
-
-    // ✅ Show / Hide + Animation
-    if(html.trim() === ""){
-        box.style.display = "none";
-        box.classList.remove("notify-active");
-    } else {
-        box.style.display = "flex";
-        box.innerHTML = html;
-        box.classList.add("notify-active");
-    }
-}
 
 </script>
 
