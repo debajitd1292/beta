@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPU Operations Dashboard</title>
+<title>PPU OPERATIONS DASHBOARD</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d47a1">
@@ -43,7 +43,8 @@ body {
 }
 
 #todayDate {
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
     opacity: 0.85;
     margin-bottom: 4px;
 }
@@ -99,13 +100,14 @@ body {
     background: linear-gradient(135deg, #1f4e79, #163a5f);
     color: white;
     margin: 10px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
 
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 
     align-items: center;     
     text-align: center;
@@ -542,7 +544,7 @@ body.dark .badge {
      class="logo" 
      onload="this.style.opacity=1; this.style.transform='scale(1)'"> 
 
-    <h3>PPU Operations Dashboard</h3> 
+    <h3>PPU OPERATIONS DASHBOARD</h3> 
     <div id="todayDate"></div> 
 
     <!-- ✅ ADDED NOTE HERE --> 
@@ -798,9 +800,9 @@ const customAlerts = [
 
     // ✅ ONE-TIME ALERT (Example: 10 Oct 2026, 14:00–18:00)
     {
-        from: new Date(2026, 9, 28, 22, 30),   // YYYY MM DD HR MIN
-        to:   new Date(2026, 9, 28, 23, 45),
-        text: "Operations Meeting<br>at CCR Conference Room at 3 PM",
+        from: new Date(2026, 09, 28, 22, 0),   // YYYY MM DD HR MIN
+        to:   new Date(2026, 09, 28, 23, 30),
+        text: "Operations Meeting at CCR Conference Room at 3 PM",
         repeat: "once"
     }
 
@@ -855,13 +857,24 @@ function getActiveAlerts(){
         }
 
     } 
-    else if(a.repeat === "once"){
+    else if(a.repeat === "once"){ 
 
-        if(now >= a.from && now <= a.to){
-            alerts.push(a.text);
-        }
+        console.log("ONCE BLOCK RUNNING"); 
 
+    let nowMinutes = now.getTime(); 
+    let fromMinutes = new Date(a.from).getTime(); 
+    let toMinutes   = new Date(a.to).getTime(); 
+
+    console.log("NOW:", nowMinutes); 
+    console.log("FROM:", fromMinutes); 
+    console.log("TO:", toMinutes); 
+
+    if(nowMinutes >= fromMinutes && nowMinutes <= toMinutes){ 
+        console.log("ONCE ALERT TRIGGERED"); 
+        alerts.push(a.text); 
     } 
+
+} 
     else if(a.repeat === "weekly"){
 
         let currentDay = now.getDay();   // 0–6
@@ -957,10 +970,9 @@ document.getElementById("today").innerHTML = "Loading...";
 let dateElem = document.getElementById("todayDate");
 dateElem.innerText = new Date().toDateString();
 
-/* ✅ APPLY GREEN COLOR */
-if(isSpecialDay()){
+if(isSpecialDay()){		/* ✅ Special Days */
     dateElem.style.color = "#ffd600";
-    dateElem.style.fontWeight = "bold";
+    dateElem.style.fontWeight = "600";
 }
 
 populateNames();
