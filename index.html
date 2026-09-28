@@ -198,15 +198,6 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     background: rgba(13, 71, 161, 0.1);
 }
 
-/* 🔁 Blinking */
-.blink {
-    animation: blinkAnim 1s infinite;
-}
-
-@keyframes blinkAnim {
-    50% { opacity: 0.3; }
-}
-
 .notify-container {
     margin: 12px;
     display: flex;
@@ -480,9 +471,6 @@ body.dark .badge {
     <h3>PPU Operations Dashboard</h3> 
     <div id="todayDate"></div> 
 
-    <!-- ✅ ADDED NOTE HERE --> 
-    <div id="todayNote" class="notice-bar" style="display:none;"></div> 
-
     <div class="badge" id="todayShiftBadge">Loading...</div> 
 
     <div class="holiday-text"> 
@@ -522,9 +510,6 @@ body.dark .badge {
 </div>
 
 <div class="card">
-
-    <!-- 🔴 ALERT ABOVE TITLE -->
-    <div id="todayAlert"></div>
 
     <h3>Today's Shift</h3>
     <div id="today"></div>
@@ -814,16 +799,6 @@ document.getElementById("today").innerHTML = "Loading...";
 
 let dateElem = document.getElementById("todayDate");
 dateElem.innerText = new Date().toDateString();
-// 🎂 Show Birthday / Notes
-let note = getTodayNote();
-let noteBox = document.getElementById("todayNote");
-
-if(note){
-    noteBox.innerHTML = note;
-    noteBox.style.display = "block";
-} else {
-    noteBox.style.display = "none";
-}
 
 /* ✅ APPLY GREEN COLOR */
 if(isSpecialDay()){
@@ -841,8 +816,6 @@ if(savedName){
     document.getElementById("nameSelector").value = savedName;
 }
 
-// 🔴 Show alerts ABOVE TODAY title
-let alertBox = document.getElementById("todayAlert");
 let alerts = getActiveAlerts();
 
 if(alerts.length > 0){
