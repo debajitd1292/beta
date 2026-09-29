@@ -96,7 +96,7 @@ body {
     border: 1px solid rgba(255,255,255,0.15);
 }
 
-.info-bar {			/* ✅ HOD/AIC Sec */
+.info-bar {		/* ✅ HOD/AIC Sec */
     background: linear-gradient(135deg, #1f4e79, #163a5f);
     color: white;
     margin: 10px;
@@ -115,11 +115,52 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.info-bar div {			/* ✅ HOD/AIC Sec */
+.info-bar div {		/* ✅ HOD/AIC Sec */
     width: 100%;
 }
 
-.section-header {		/* ✅ Exec/Non Exec */
+.row {			/* ✅ Side by Side */
+    display: flex;
+    gap: 10px;
+}
+
+.field {
+    flex: 1;
+    min-width: 0;
+}
+
+input, select {
+    width: 100%;
+    height: 40px;
+    padding: 6px 10px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border: 2px solid gold;
+}
+
+@media (max-width: 600px) {
+    .row {
+        flex-direction: row;
+    }
+
+    select, input {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .row {
+        flex-direction: column;
+    }
+}
+
+.section-header {	/* ✅ Exec/Non Exec */
     display: inline-block;
     padding: 6px 14px;
     margin: 12px 0 8px 0;
@@ -139,13 +180,13 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.exec-header {			/* ✅ Exec */
+.exec-header {		/* ✅ Exec */
     color: #0d47a1;
     background: linear-gradient(135deg, rgba(13,71,161,0.15), rgba(13,71,161,0.05));
     border: 1px solid rgba(13,71,161,0.3);
 }
 
-.nonexec-header {		/* ✅ Non Exec */
+.nonexec-header {	/* ✅ Non Exec */
     color: #b71c1c;
     background: linear-gradient(135deg, rgba(183,28,28,0.15), rgba(183,28,28,0.05));
     border: 1px solid rgba(183,28,28,0.3);
@@ -158,21 +199,6 @@ body {
     border-radius:12px;
 
     margin-top:15px;
-}
-
-input, select {
-    width:100%;
-    height:40px;
-    padding:6px 10px;
-    margin-top:6px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
-}
-
-select:focus, input:focus {
-    outline:none;
-    border:2px solid gold;
 }
 
 .shift-title { font-weight:bold; margin-top:10px; }
@@ -265,7 +291,7 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     color: white;
 }
 
-.notice-alert {			/* ✅ Alerts */
+.notice-alert {		/* ✅ Alerts */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -290,13 +316,13 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     animation: pulseGlow 2s infinite;
 }
 
-@keyframes pulseGlow {		/* ✅ Alerts */
+@keyframes pulseGlow {	/* ✅ Alerts */
     0%   { box-shadow: 0 0 6px rgba(183,28,28,0.2); }
     50%  { box-shadow: 0 0 16px rgba(183,28,28,0.5); }
     100% { box-shadow: 0 0 6px rgba(183,28,28,0.2); }
 }
 
-@keyframes blink {		/* ✅ Alerts Global */
+@keyframes blink {	/* ✅ Alerts Global */
     0% { opacity:1; }
     50% { opacity:0; }
     100% { opacity:1; }
@@ -570,15 +596,21 @@ body.dark .badge {
 
 <div class="card">
 
-    <label>Select Category:</label>
-    <select id="categorySelector" onchange="onCategoryChange()">
-        <option value="" disabled selected>Select Category</option>
-        <option value="exec">Executive</option>
-        <option value="nonexec">Non-Executive</option>
-    </select>
+    <div class="row">
+    <div class="field">
+        <label>Select Category:</label>
+        <select id="categorySelector" onchange="onCategoryChange()">
+            <option value="" disabled selected>Select Category</option>
+            <option value="exec">Executive</option>
+            <option value="nonexec">Non-Executive</option>
+        </select>
+    </div>
 
-    <label>Your Name:</label>
-    <select id="nameSelector" onchange="onNameChange()"></select>
+    <div class="field">
+        <label>Select Name:</label>
+        <select id="nameSelector" onchange="onNameChange()"></select>
+    </div>
+</div>
 
 </div>
 
@@ -616,14 +648,13 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v11";   // 🔁 update when CSV change
+const DATA_VERSION = "v12";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
 const notesUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notes.csv?v=" + DATA_VERSION;
 const trainingUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/training.csv?v=" + DATA_VERSION;
 const nonExecUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/nonexec_shift.csv?v=" + DATA_VERSION;
-const alertUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/alerts.csv?v=" + DATA_VERSION;
 
 let data = [];
 let holidays = [];
@@ -633,7 +664,6 @@ let trainings = [];
 let header = [];
 let nonExecData = [];
 let nonExecHeader = [];
-let csvAlerts = [];
 
 const nonExecSeniorityOrder = [
     "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib"
@@ -667,29 +697,31 @@ Promise.all([
   fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(alertUrl, { cache: "no-store" }).then(r=>r.text())
-]).then(([shiftText, holidayText, notesText, trainingText, nonExecText, alertText]) => {
+  fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
+]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
 
-if(!shiftText || shiftText.trim() === ""){
+    if(!holidayText) console.warn("Holiday data missing");
+    if(!notesText) console.warn("Notes data missing");
+    if(!trainingText) console.warn("Training data missing");
+    if(!nonExecText) console.warn("Non-exec data missing");
+
+    if(!shiftText || shiftText.trim() === ""){
     document.getElementById("today").innerHTML =
     "<div style='color:red;font-weight:bold;'>SHIFT DATA NOT LOADED</div>";
     return;
 }
 
-parseAlertCSV(alertText);	// ✅ Alerts
+    if(!holidayText) holidayText = "";
+    if(!notesText) notesText = "";
+    if(!trainingText) trainingText = "";
 
-if(!holidayText) holidayText = "";
-if(!notesText) notesText = "";
-if(!trainingText) trainingText = "";
-
-data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
+data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(","));
 
 header = data[0].map(x => x.trim());
 
 nonExecText = nonExecText || "";
 
-nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
+nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(","));
 nonExecHeader = nonExecData[0]?.map(x => x.trim()) || [];
 
 if(!header || header.length < 2){
@@ -700,12 +732,12 @@ if(!header || header.length < 2){
 selectedName = "";
 
 holidays = holidayText.split("\n").slice(1).map(r=>{
-let [d,t,n]=r.replace(/\r/g,"").split(/[,;]/);
+let [d,t,n]=r.replace(/\r/g,"").split(",");
 return {date:d?.trim(),type:t?.trim(),name:n?.trim()};
 });
 
 trainings = trainingText.split("\n").slice(1).map(r=>{
-let [d,n,t]=r.replace(/\r/g,"").split(/[,;]/);
+let [d,n,t]=r.replace(/\r/g,"").split(",");
 return {
     date: d?.trim(),
     name: n?.trim(),
@@ -714,7 +746,7 @@ return {
 });
 
 notes = notesText.split("\n").slice(1).map(r=>{
-let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
+let [d,t,n,m]=r.replace(/\r/g,"").split(",");
 return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
 });
 
@@ -783,7 +815,7 @@ const customAlerts = [
     dayOfWeek: 4,   // 0=Sun, 1=Mon ... 4=Thu
     fromHour: 9,
     toHour: 16,
-    text: "Weekly Review Meeting<br>at CCR Conference Room at 4 PM",
+    text: "PPU Weekly Review Meeting<br>Today at 4 PM • CCR Conference Room",
     repeat: "weekly"
     },
 
@@ -791,7 +823,7 @@ const customAlerts = [
     {
         from: { day: 1, month: 4, hour: 0, min: 0 },
         to:   { day: 10, month: 4, hour: 23, min: 59 },
-        text: "Reminder: PMS Filing to be completed by 10th April",
+        text: "Reminder: PMS filing to be completed by 10th April",
         repeat: "yearly"
     },
 
@@ -812,14 +844,14 @@ function getActiveAlerts(){
     let lastDay = new Date(year, month + 1, 0).getDate();
 
     if((date === lastDay && hours >= 9) || (date === 1 && hours < 6)){
-        alerts.push("Reset Totalizers, Pump Running Hours & Blending Silo<br>at 6 AM on 1st day of the Month. Record Readings before Reset");
+        alerts.push("Reset Totalizers, Pump Running Hours & Blending Silo<br>On 1st Day of the Month at 6 AM • Record Readings before Reset");
     }
 
     // 🔴 2. Attendance Alert (19th → 21st full day)
     if(date >= 19 && date <= 21){
         alerts.push("Update/Sign Attendance Register");
     }
-    // 🔴 3 & 4. Custom Alerts (Yearly + One-time)
+    // 🔴 3. Custom Alerts (Yearly)
 
     customAlerts.forEach(a => {
 
@@ -845,7 +877,7 @@ function getActiveAlerts(){
             alerts.push(a.text);
         }
 
-    }  
+    } 
     else if(a.repeat === "weekly"){
 
         let currentDay = now.getDay();   // 0–6
@@ -859,24 +891,6 @@ function getActiveAlerts(){
             currentMinutes >= fromMinutes &&
             currentMinutes <= toMinutes
         ){
-            alerts.push(a.text);
-        }
-
-    }
-
-});
-
-// 🔵 CSV Alerts (date-range)
-csvAlerts.forEach(a => {
-
-    if(a.type?.toLowerCase().trim() === "date-range"){
-
-        let from = parseDate(a.fromDate);
-        let to   = parseDate(a.toDate);
-
-        let today = new Date(year, month, date); // ignore time
-
-        if(today >= from && today <= to){
             alerts.push(a.text);
         }
 
@@ -966,14 +980,6 @@ if(isSpecialDay()){		/* ✅ Special Days */
 
 populateNames();
 
-/* AUTO SAVE */
-let savedName = localStorage.getItem("ppu_name");
-
-if(savedName){
-    selectedName = savedName;
-    document.getElementById("nameSelector").value = savedName;
-}
-
 /* SHOW NOTE */
 document.getElementById("todayNote").innerHTML = getTodayNote();
 
@@ -985,8 +991,9 @@ if(alerts.length > 0){
     alertBox.innerHTML = `
     <div class="notice-alert">
         ⚠ ${alerts.join(" | ")}
-    </div>
-    `;
+    </div>`;
+} else {
+    alertBox.innerHTML = "";
 }
 
 refresh();
@@ -1084,45 +1091,6 @@ function getShift(date,name){
     return null;
 }
 
-function parseAlertCSV(text){		// ✅ Alerts
-
-    let rows = text.split("\n").map(r => r.trim()).filter(r => r);
-
-    csvAlerts = [];
-
-    rows.slice(1).forEach(r => {
-
-        let parts = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-
-        csvAlerts.push({
-            type: parts[0].trim(),
-            fromDate: parts[1].trim(),
-            toDate: parts[2].trim(),
-            text: parts.slice(3).join(",").trim()
-        });
-
-    });
-}
-
-function parseDate(str){
-    if(!str) return null;
-
-    // Detect format
-    if(str.includes("-")){
-        let parts = str.split("-");
-
-        // YYYY-MM-DD
-        if(parts[0].length === 4){
-            return new Date(parts[0], parts[1]-1, parts[2]);
-        }
-
-        // DD-MM-YYYY
-        return new Date(parts[2], parts[1]-1, parts[0]);
-    }
-
-    return null;
-}
-
 function parseShift(shift){
 
     if(!shift) return [];
@@ -1153,9 +1121,15 @@ for(let i=1;i<data.length;i++){
     continue;
 }
 
-let isMulti = shift.length>1;
+    if(shift === "OFF"){
+        if(!shifts["OFF"]) shifts["OFF"] = [];
+        shifts["OFF"].push({name:name, multi:false});
+        continue;
+    }
 
-    parseShift(shift).forEach(s=>{
+        let isMulti = shift.length > 1;
+
+        parseShift(shift).forEach(s=>{
     if(!shifts[s]) shifts[s]=[];
     shifts[s].push({name:name,multi:isMulti});
     });
@@ -1176,7 +1150,14 @@ function getNonExecData(date){
         let shift=nonExecData[i][col]?.trim();
         if(!shift) continue;
 
-        let isMulti = shift.length>1;
+        // Handle OFF properly (same as exec)
+    if(shift === "OFF"){
+        if(!shifts["OFF"]) shifts["OFF"] = [];
+        shifts["OFF"].push({name:name, multi:false});
+        continue;
+    }
+
+        let isMulti = shift.length > 1;
 
         parseShift(shift).forEach(s=>{
             if(!shifts[s]) shifts[s]=[];
@@ -1189,13 +1170,12 @@ function getNonExecData(date){
 
 function render(id,date){
 
-    console.log("Render called for:", id, date);
+    const DEBUG = false;
+    if(DEBUG) console.log("Render called for:", id, date);
     let box=document.getElementById(id);
     box.innerHTML="";
 
-    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
-
-if(header.indexOf(date)===-1){
+    if(header.indexOf(date)===-1){
 
     let msg = (id === "today")
         ? "Shift schedule is not available for today"
@@ -1207,6 +1187,8 @@ if(header.indexOf(date)===-1){
 
     return;
 }
+
+box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
 
 let shifts=getData(date);
 
@@ -1338,7 +1320,7 @@ function renderTraining(){
         let [d1,m1] = da.split("-"); 
         let [d2,m2] = db.split("-"); 
 
-        let year = new Date().getFullYear();
+        let year = refDate.getFullYear();
 
         return new Date(year, m1-1, d1) - new Date(year, m2-1, d2); 
 
@@ -1509,7 +1491,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=11')
+  navigator.serviceWorker.register('./service-worker.js?v=12')
     .then(() => console.log("Service Worker Registered"));
 }
 
