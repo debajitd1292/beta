@@ -43,9 +43,9 @@ body {
 }
 
 #todayDate {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
-    opacity: 0.85;
+    opacity: 0.9;
     margin-bottom: 4px;
 }
 
@@ -96,7 +96,7 @@ body {
     border: 1px solid rgba(255,255,255,0.15);
 }
 
-.info-bar {			/* ✅ HOD/AIC */
+.info-bar {			/* ✅ HOD/AIC Sec */
     background: linear-gradient(135deg, #1f4e79, #163a5f);
     color: white;
     margin: 10px;
@@ -115,7 +115,7 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.info-bar div {			/* ✅ HOD/AIC */
+.info-bar div {			/* ✅ HOD/AIC Sec */
     width: 100%;
 }
 
@@ -547,7 +547,6 @@ body.dark .badge {
     <h3>PPU OPERATIONS DASHBOARD</h3> 
     <div id="todayDate"></div> 
 
-    <!-- ✅ ADDED NOTE HERE --> 
     <div id="todayNote" style="margin-top:5px;font-weight:bold;"></div> 
 
     <div class="badge" id="todayShiftBadge">Loading...</div> 
@@ -557,7 +556,6 @@ body.dark .badge {
         Next RH: <span id="nextRH"></span> 
     </div> 
 
-    <!-- 🌙 DARK MODE TOGGLE (ADD THIS) -->
     <div id="themeToggle" class="theme-switch">
         <input type="checkbox" id="toggleCheckbox">
         <span class="slider"></span>
@@ -586,7 +584,6 @@ body.dark .badge {
 
 <div class="card">
 
-    <!-- 🔴 ALERT ABOVE TITLE -->
     <div id="todayAlert"></div>
 
     <h3>Today's Shift</h3>
@@ -597,11 +594,8 @@ body.dark .badge {
 
     <h3 id="selectedTitle">Select Date & View Shift</h3> 
 
-    <!-- Date Picker -->
     <label>Select Date:</label> 
     <input type="date" id="datePicker" onchange="renderSelected()"> 
-
-    <!-- Shift Output -->
     <div id="selected" style="margin-top:10px;"></div> 
 
 </div>
@@ -622,13 +616,14 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v10";   // 🔁 update when CSV change
+const DATA_VERSION = "v11";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
 const notesUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/notes.csv?v=" + DATA_VERSION;
 const trainingUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/training.csv?v=" + DATA_VERSION;
 const nonExecUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/nonexec_shift.csv?v=" + DATA_VERSION;
+const alertUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/alerts.csv?v=" + DATA_VERSION;
 
 let data = [];
 let holidays = [];
@@ -638,6 +633,7 @@ let trainings = [];
 let header = [];
 let nonExecData = [];
 let nonExecHeader = [];
+let csvAlerts = [];
 
 const nonExecSeniorityOrder = [
     "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib"
@@ -671,14 +667,17 @@ Promise.all([
   fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
   fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
-]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
+  fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text()),
+  fetch(alertUrl, { cache: "no-store" }).then(r=>r.text())
+]).then(([shiftText, holidayText, notesText, trainingText, nonExecText, alertText]) => {
 
 if(!shiftText || shiftText.trim() === ""){
     document.getElementById("today").innerHTML =
     "<div style='color:red;font-weight:bold;'>SHIFT DATA NOT LOADED</div>";
     return;
 }
+
+parseAlertCSV(alertText);	// ✅ Alerts
 
 if(!holidayText) holidayText = "";
 if(!notesText) notesText = "";
@@ -746,7 +745,6 @@ const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov",
 return day + suffix + " " + months[parseInt(m)-1];
 }
 
-/* ✅ NEW FUNCTION (ADDED) */
 function isSpecialDay(){
 
 let today = new Date();
@@ -778,7 +776,6 @@ if(isGH || isRH) return true;
 return false;
 }
 
-// 🔴 CUSTOM ALERTS CONFIG (ADD HERE)
 const customAlerts = [
 
     // ✅ WEEKLY ALERT (Every Thursday 9 AM – 4 PM)
@@ -786,7 +783,7 @@ const customAlerts = [
     dayOfWeek: 4,   // 0=Sun, 1=Mon ... 4=Thu
     fromHour: 9,
     toHour: 16,
-    text: "Weekly Operations Review Meeting<br>CCR Conference Room at 3 PM",
+    text: "Weekly Review Meeting<br>at CCR Conference Room at 4 PM",
     repeat: "weekly"
     },
 
@@ -794,17 +791,9 @@ const customAlerts = [
     {
         from: { day: 1, month: 4, hour: 0, min: 0 },
         to:   { day: 10, month: 4, hour: 23, min: 59 },
-        text: "Reminder: PMS Filing to be completed by 10 April",
+        text: "Reminder: PMS Filing to be completed by 10th April",
         repeat: "yearly"
     },
-
-    // ✅ ONE-TIME ALERT (Example: 10 Oct 2026, 14:00–18:00)
-    {
-        from: new Date(2026, 09, 28, 22, 0),   // YYYY MM DD HR MIN
-        to:   new Date(2026, 09, 28, 23, 30),
-        text: "Operations Meeting at CCR Conference Room at 3 PM",
-        repeat: "once"
-    }
 
 ];
 
@@ -819,11 +808,11 @@ function getActiveAlerts(){
 
     let alerts = [];
 
-    // 🔴 1. Monthly Reset Alert (Last day 2PM → 1st 6AM)
+    // 🔴 1. Monthly Reset Alert (Last day 9AM → 1st 6AM)
     let lastDay = new Date(year, month + 1, 0).getDate();
 
-    if((date === lastDay && hours >= 14) || (date === 1 && hours < 6)){
-        alerts.push("Reset Totalizers & Pump Running Hours<br>along with Blending Silo Changeover at 06:00 hrs");
+    if((date === lastDay && hours >= 9) || (date === 1 && hours < 6)){
+        alerts.push("Reset Totalizers, Pump Running Hours & Blending Silo<br>at 6 AM on 1st day of the Month. Record Readings before Reset");
     }
 
     // 🔴 2. Attendance Alert (19th → 21st full day)
@@ -856,25 +845,7 @@ function getActiveAlerts(){
             alerts.push(a.text);
         }
 
-    } 
-    else if(a.repeat === "once"){ 
-
-        console.log("ONCE BLOCK RUNNING"); 
-
-    let nowMinutes = now.getTime(); 
-    let fromMinutes = new Date(a.from).getTime(); 
-    let toMinutes   = new Date(a.to).getTime(); 
-
-    console.log("NOW:", nowMinutes); 
-    console.log("FROM:", fromMinutes); 
-    console.log("TO:", toMinutes); 
-
-    if(nowMinutes >= fromMinutes && nowMinutes <= toMinutes){ 
-        console.log("ONCE ALERT TRIGGERED"); 
-        alerts.push(a.text); 
-    } 
-
-} 
+    }  
     else if(a.repeat === "weekly"){
 
         let currentDay = now.getDay();   // 0–6
@@ -895,14 +866,32 @@ function getActiveAlerts(){
 
 });
 
+// 🔵 CSV Alerts (date-range)
+csvAlerts.forEach(a => {
+
+    if(a.type === "date-range"){
+
+        let from = parseDate(a.fromDate);
+        let to   = parseDate(a.toDate);
+
+        let today = new Date(year, month, date); // ignore time
+
+        if(today >= from && today <= to){
+            alerts.push(a.text);
+        }
+
+    }
+
+});
+
     return alerts;
 }
 
 /* EXISTING */
 function getTodayNote(){
-let today = new Date();
-let key = ("0"+today.getDate()).slice(-2) + "-" +
-          ("0"+(today.getMonth()+1)).slice(-2);
+    let today = new Date();
+    let key = ("0"+today.getDate()).slice(-2) + "-" +
+              ("0"+(today.getMonth()+1)).slice(-2);
 
 let todaysNotes = notes.filter(n => n.date === key);
 
@@ -965,10 +954,10 @@ function init(){
 
 initTheme();
 
-document.getElementById("today").innerHTML = "Loading...";
+    document.getElementById("today").innerHTML = "Loading...";
 
-let dateElem = document.getElementById("todayDate");
-dateElem.innerText = new Date().toDateString();
+    let dateElem = document.getElementById("todayDate");
+    dateElem.innerText = new Date().toDateString();
 
 if(isSpecialDay()){		/* ✅ Special Days */
     dateElem.style.color = "#ffd600";
@@ -1095,42 +1084,67 @@ function getShift(date,name){
     return null;
 }
 
+function parseAlertCSV(text){		// ✅ Alerts
+
+    let rows = text.split("\n").map(r => r.trim()).filter(r => r);
+
+    csvAlerts = [];
+
+    rows.slice(1).forEach(r => {
+
+        let parts = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+        csvAlerts.push({
+            type: parts[0].trim(),
+            fromDate: parts[1].trim(),
+            toDate: parts[2].trim(),
+            text: parts.slice(3).join(",").trim()
+        });
+
+    });
+}
+
+function parseDate(str){		// ✅ Alerts
+    let [dd, mm, yyyy] = str.split("-");
+    return new Date(yyyy, mm - 1, dd);
+}
+
 function parseShift(shift){
 
     if(!shift) return [];
 
     shift = shift.trim();
 
-    // ✅ Keep OFF as single unit
+    // Keep OFF as single unit
     if(shift === "OFF") return ["OFF"];
 
-    // ✅ Split A, B, C, etc.
+    // Split A, B, C, etc.
     return shift.match(/[A-Z]/g) || [];
 }
 
 function getData(date){
-let col = header.indexOf(date);
-if(col === -1) return {};
-let shifts={};
+    let col = header.indexOf(date);
+    if(col === -1) return {};
+    let shifts={};
 
 for(let i=1;i<data.length;i++){
 
-let name=data[i][0]?.trim();
-let shift=data[i][col]?.trim();
-if(!shift) continue;
+    let name=data[i][0]?.trim();
+    let shift=data[i][col]?.trim();
+    if(!shift) continue;
 
-if(shift==="OFF"){
-if(!shifts["OFF"]) shifts["OFF"]=[];
-shifts["OFF"].push({name:name,multi:false});
-continue;
+    if(shift==="OFF"){
+    if(!shifts["OFF"]) shifts["OFF"]=[];
+    shifts["OFF"].push({name:name,multi:false});
+    continue;
 }
 
 let isMulti = shift.length>1;
 
-parseShift(shift).forEach(s=>{
-if(!shifts[s]) shifts[s]=[];
-shifts[s].push({name:name,multi:isMulti});
-});
+    parseShift(shift).forEach(s=>{
+    if(!shifts[s]) shifts[s]=[];
+    shifts[s].push({name:name,multi:isMulti});
+    });
 }
 return shifts;
 }
@@ -1161,11 +1175,11 @@ function getNonExecData(date){
 
 function render(id,date){
 
-console.log("Render called for:", id, date);
-let box=document.getElementById(id);
-box.innerHTML="";
-// ✅ Show Executive header only when rendering
-box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
+    console.log("Render called for:", id, date);
+    let box=document.getElementById(id);
+    box.innerHTML="";
+
+    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
 
 if(header.indexOf(date)===-1){
 
@@ -1253,11 +1267,11 @@ if(hasNonExec){
 }
 }
 function renderSelected(){
-let val=document.getElementById("datePicker").value;
-if(!val) return;
+    let val=document.getElementById("datePicker").value;
+    if(!val) return;
 
-let d=new Date(val);
-let formatted=formatDate(d);
+    let d=new Date(val);
+    let formatted=formatDate(d);
 
 document.getElementById("selectedTitle").innerText =
 "Selected Date Shift ("+formatted+")";
@@ -1420,11 +1434,11 @@ function renderNext7Days(){
 }
 
 function onNameChange(){
-selectedName=document.getElementById("nameSelector").value;
-localStorage.setItem("ppu_name",selectedName);
-refresh();
-if(document.getElementById("datePicker").value){
-renderSelected();
+    selectedName=document.getElementById("nameSelector").value;
+    localStorage.setItem("ppu_name",selectedName);
+    refresh();
+    if(document.getElementById("datePicker").value){
+    renderSelected();
 }
 renderNext7Days();
 }
@@ -1481,7 +1495,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=10')
+  navigator.serviceWorker.register('./service-worker.js?v=11')
     .then(() => console.log("Service Worker Registered"));
 }
 
