@@ -648,7 +648,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v12";   // 🔁 update when CSV change
+const DATA_VERSION = "v13";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -1491,30 +1491,33 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=12')
+  navigator.serviceWorker.register('./service-worker.js?v=13')
     .then(() => console.log("Service Worker Registered"));
 }
 
-// ✅ AUTO RESTORE ON PAGE LOAD
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function(){	// ✅ AUTO RESTORE ON PAGE LOAD
 
-    // 1. Restore category
     let savedCategory = localStorage.getItem("selectedCategory");
     if(savedCategory){
         document.getElementById("categorySelector").value = savedCategory;
     }
 
-    // 2. Load names based on category
     populateNames();
 
-    // 3. Restore name
     let savedName = localStorage.getItem("ppu_name");
+
     if(savedName){
-        selectedName = savedName;
-        document.getElementById("nameSelector").value = savedName;
+        const nameDropdown = document.getElementById("nameSelector");
+
+        let exists = Array.from(nameDropdown.options)
+                          .some(opt => opt.value === savedName);
+
+        if(exists){
+            selectedName = savedName;
+            nameDropdown.value = savedName;
+        }
     }
 
-    // 4. Refresh UI
     refresh();
     renderNext7Days();
 });
