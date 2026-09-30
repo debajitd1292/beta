@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+f<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -225,11 +225,6 @@ select:focus, input:focus {
     margin-top:15px;
 }
 
-select:focus, input:focus {
-    outline:none;
-    border:2px solid gold;
-}
-
 .shift-title { font-weight:bold; margin-top:10px; }
 
 .chip {
@@ -313,6 +308,11 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     padding:15px;
     font-size:12px;
     color:#555;
+}
+
+#lastUpdated {
+    font-size: 11px;
+    opacity: 0.8;
 }
 
 .NA {
@@ -573,21 +573,21 @@ body.dark .notice-alert {		/* ✅ DARK Alerts */
     box-shadow: 0 4px 14px rgba(0,0,0,0.6);
 }
 
-body.dark .shift-active-box.A::before {		/* ✅ DARK Highlights */
-    background: linear-gradient(90deg, transparent, rgba(192,132,252,0.6), transparent);
-}
-
-body.dark .shift-active-box.B::before {
-    background: linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent);
-}
-
-body.dark .shift-active-box.C::before {
-    background: linear-gradient(90deg, transparent, rgba(96,165,250,0.6), transparent);
-}
-
 body.dark .shift-active-box::before {
-    filter: blur(1px);
-    opacity: 0.7;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(180,180,180,0.15) 40%,
+        rgba(220,220,220,0.45) 70%,
+        rgba(255,255,255,0.6) 85%,
+        rgba(255,255,255,0.75) 100%
+    );
+
+    background-size: 200% 100%;
+    animation: moveBorder 2s linear infinite;
+
+    filter: blur(1.2px);
+    opacity: 0.65;
 }
 
 body.dark input,
@@ -599,6 +599,10 @@ body.dark select {
 
 body.dark .footer {
     color:#94a3b8;
+}
+
+body.dark #lastUpdated {
+    color: #94a3b8;
 }
 
 /* Keep shift colors intact */
@@ -692,12 +696,13 @@ body.dark .badge {
 </div>
 
 <div class="footer">
+    <div id="lastUpdated" style="margin-bottom:6px;"></div>
     © 2026 • Developed by DebajitD
 </div>
 
 <script>
 
-const DATA_VERSION = "v14";   // 🔁 update when CSV change
+const DATA_VERSION = "v15";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -743,11 +748,11 @@ function sortBySeniority(list){
 }
 
 Promise.all([
-  fetch(shiftUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
-  fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
+  fetch(shiftUrl,).then(r=>r.text()),
+  fetch(holidayUrl,).then(r=>r.text()),
+  fetch(notesUrl,).then(r=>r.text()),
+  fetch(trainingUrl,).then(r=>r.text()),
+  fetch(nonExecUrl,).then(r=>r.text())
 ]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
 
 if(!shiftText || shiftText.trim() === ""){
@@ -796,6 +801,9 @@ return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
 });
 
 init();
+
+isDataLoaded = true;
+updateLastUpdated();
 
 })
 
@@ -889,7 +897,7 @@ function getActiveAlerts(){
     let lastDay = new Date(year, month + 1, 0).getDate();
 
     if((date === lastDay && hours >= 9) || (date === 1 && hours < 6)){
-        alerts.push("Reset Totalizers, Pump Running Hours & Blending Silo<br>On 1st Day of the Month at 6 AM • Record Readings before Reset");
+        alerts.push("Reset Totalizers, Pump Running Hours & Blending Silo on 1st Day of the Month at 6 AM • Record Readings before Reset");
     }
 
     // 🔴 2. Attendance Alert (19th → 21st full day)
@@ -980,6 +988,17 @@ return todaysNotes.map(n => {
     return n.message;
 
 }).join("<br>");
+}
+
+function updateLastUpdated(){		// Last Sync
+    let now = new Date();
+
+    let time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let date = now.toLocaleDateString([], { day: '2-digit', month: 'short' });
+
+    document.getElementById("lastUpdated").innerText =
+        "Last Sync: " + date + " • " + time;
 }
 
 function getCurrentShiftInfo() {
@@ -1331,7 +1350,7 @@ box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div
 
 // ================= NON-EXEC (FIXED - SINGLE RENDER) =================
 
-let nonExecShifts = (header.indexOf(date) === -1) ? {} : getNonExecData(date);
+let nonExecShifts = (nonExecHeader.indexOf(date) === -1) ? {} : getNonExecData(date);
 
 let hasNonExec = Object.keys(nonExecShifts).some(k => nonExecShifts[k]?.length);
 
@@ -1569,6 +1588,55 @@ function onCategoryChange(){
     renderNext7Days();
 }
 
+function autoRefreshData(){
+
+    console.log("🔄 Auto refresh triggered");
+
+    Promise.all([
+        fetch(shiftUrl, { cache: "no-store" }).then(r=>r.text()),
+        fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
+        fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
+        fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
+        fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
+    ]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
+
+        // 🔁 Update data (same logic as initial load)
+        data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
+        header = data[0].map(x => x.trim());
+
+        holidays = holidayText.split("\n").slice(1).map(r=>{
+            let [d,t,n]=r.replace(/\r/g,"").split(/[,;]/);
+            return {date:d?.trim(),type:t?.trim(),name:n?.trim()};
+        });
+
+        trainings = trainingText.split("\n").slice(1).map(r=>{
+            let [d,n,t]=r.replace(/\r/g,"").split(/[,;]/);
+            return {date:d?.trim(),name:n?.trim(),type:t?.trim()};
+        });
+
+        notes = notesText.split("\n").slice(1).map(r=>{
+            let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
+            return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
+        });
+
+        nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
+        nonExecHeader = nonExecData[0]?.map(x => x.trim()) || [];
+
+        // 🔁 UI refresh (reuse your existing functions)
+        document.getElementById("todayNote").innerHTML = getTodayNote();
+
+        refresh();                 // Today shift + badge
+        renderNext7Days();         // next 7 days
+        renderTraining();          // training section
+
+        if(document.getElementById("datePicker").value){
+            renderSelected();      // selected date
+        }
+
+        calcHoliday();             // GH/RH
+    });
+}
+
 function calcHoliday(){
 
     let today = new Date();
@@ -1598,7 +1666,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=14')
+  navigator.serviceWorker.register('./service-worker.js?v=15')
     .then(() => console.log("Service Worker Registered"));
 }
 
@@ -1624,6 +1692,18 @@ document.addEventListener("DOMContentLoaded", function(){
     // 4. Refresh UI
     refresh();
     renderNext7Days();
+});
+
+// ⏱ Auto refresh every 2 minutes
+setInterval(() => {
+    if(isDataLoaded) autoRefreshData();
+}, 120000);
+
+// 🔁 Refresh when user comes back to tab
+document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "visible" && isDataLoaded){
+        autoRefreshData();
+    }
 });
 
 </script>
