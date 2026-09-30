@@ -1176,17 +1176,16 @@ function render(id,date){
 if(header.indexOf(date)===-1){
 
     let msg = (id === "today")
-        ? "Shift schedule is not available for today"
-        : "Shift schedule is not available for the selected date";
+        ? "No shift data available in CSV for today"
+        : "No shift data available for selected date";
 
-    box.innerHTML = `<div style="color:#777;font-weight:bold;">
+    // ✅ Show message but DO NOT stop execution
+    box.innerHTML += `<div style="color:#777;font-weight:bold; margin-bottom:10px;">
     ${msg}
     </div>`;
-
-    return;
 }
 
-let shifts=getData(date);
+let shifts = (header.indexOf(date) === -1) ? {} : getData(date);
 
 /* MAIN */
 ["A","B","C","G","OFF","L","T"].forEach(s=>{
@@ -1228,7 +1227,7 @@ box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div
 
 // ================= NON-EXEC (FIXED - SINGLE RENDER) =================
 
-let nonExecShifts = getNonExecData(date);
+let nonExecShifts = (header.indexOf(date) === -1) ? {} : getNonExecData(date);
 
 let hasNonExec = Object.keys(nonExecShifts).some(k => nonExecShifts[k]?.length);
 
