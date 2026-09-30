@@ -144,6 +144,28 @@ select:focus, input:focus {
     border: 2px solid gold;
 }
 
+.shift-active-box {
+    position: relative;
+    padding: 6px;
+    border-radius: 10px;
+}
+
+.shift-active-box::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, transparent, #0d47a1, transparent);
+    background-size: 200% 100%;
+    animation: moveBorder 2s linear infinite;
+    z-index: 0;
+}
+
+.shift-active-box > * {
+    position: relative;
+    z-index: 1;
+}
+
 /* ===== Mobile Optimization ===== */
 
 @media (max-width: 600px) {
@@ -548,6 +570,10 @@ body.dark .notice-alert {		/* ✅ DARK Alerts */
     box-shadow: 0 4px 14px rgba(0,0,0,0.7);
 }
 
+body.dark .shift-active-box::before {
+    background: linear-gradient(90deg, transparent, #ffffff, transparent);
+}
+
 body.dark input,
 body.dark select {
     background:#1f2933;
@@ -674,7 +700,7 @@ let nonExecHeader = [];
 
 const nonExecSeniorityOrder = [
     "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib",
-    "Op-DPK","Op-NBN","Op-SAM","Op-ANK","Op-ANP","Op-NYN","Op-UTP","Op-GRD"
+    "Op-DPK","Op-SAM","Op-NBN","Op-ANK","Op-ANP","Op-UTP","Op-GRD","Op-NYN"
 ];
 
 const seniorityOrder = [
@@ -904,7 +930,6 @@ function getActiveAlerts(){
     return alerts;
 }
 
-/* EXISTING */
 function getTodayNote(){
     let today = new Date();
     let key = ("0"+today.getDate()).slice(-2) + "-" +
@@ -939,6 +964,43 @@ return todaysNotes.map(n => {
     return n.message;
 
 }).join("<br>");
+}
+
+function getCurrentShiftInfo() {
+    let now = new Date();
+
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+
+    let currentDate = formatDate(now);
+
+    // previous date
+    let prev = new Date(now);
+    prev.setDate(prev.getDate() - 1);
+    let prevDate = formatDate(prev);
+
+    // A Shift: 06:00–14:00
+    if(hours >= 6 && hours < 14){
+        return { shift: "A", date: currentDate };
+    }
+
+    // B Shift: 14:00–22:00
+    if(hours >= 14 && hours < 22){
+        return { shift: "B", date: currentDate };
+    }
+
+    // C Shift split logic
+    if(hours >= 22){
+        // same day C
+        return { shift: "C", date: currentDate };
+    }
+
+    if(hours < 6){
+        // 🔴 IMPORTANT: after midnight → previous date C shift
+        return { shift: "C", date: prevDate };
+    }
+
+    return null;
 }
 
 function initTheme(){
@@ -1202,10 +1264,28 @@ let alert=(["A","B","C"].includes(s)&&list.length<=2)?" ❗":"";
 let chips=list.map(obj=>{
 let sel=(selectedName && obj.name===selectedName)?"selected":"";
 let multi=obj.multi?" ❕":"";
-return `<span class="chip ${s} ${sel}">${obj.name}${multi}</span>`;
+let active = "";
+let current = getCurrentShiftInfo();
+
+if(current && s === current.shift && date === current.date){
+    active = "active-shift";
+}
+
+return `<span class="chip ${s} ${sel} ${active}">${obj.name}${multi}</span>`;
 }).join("");
 
-box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})${alert}</div>${chips||"-"}`;
+let activeClass = "";
+let current = getCurrentShiftInfo();
+
+if(current && s === current.shift && date === current.date){
+    activeClass = "shift-active-box";
+}
+
+box.innerHTML += `
+<div class="${activeClass}">
+    <div class="shift-title">${shiftLabels[s]} (${list.length})${alert}</div>
+    ${chips || "-"}
+</div>`;
 });
 
 /* D N */
@@ -1220,7 +1300,14 @@ list = sortBySeniority(list.map(x=>x.name))
 let chips=list.map(obj=>{
 let sel=(selectedName && obj.name===selectedName)?"selected":"";
 let multi=obj.multi?" ❕":"";
-return `<span class="chip ${s} ${sel}">${obj.name}${multi}</span>`;
+let active = "";
+let current = getCurrentShiftInfo();
+
+if(current && s === current.shift && date === current.date){
+    active = "active-shift";
+}
+
+return `<span class="chip ${s} ${sel} ${active}">${obj.name}${multi}</span>`;
 }).join("");
 
 box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
@@ -1254,7 +1341,18 @@ if(hasNonExec){
             return `<span class="chip ${s} ${sel}">${obj.name}</span>`;
         }).join("");
 
-        box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div>${chips}`;
+        let activeClass = "";
+let current = getCurrentShiftInfo();
+
+if(current && s === current.shift && date === current.date){
+    activeClass = "shift-active-box";
+}
+
+box.innerHTML += `
+<div class="${activeClass}">
+    <div class="shift-title">${shiftLabels[s]} (${list.length})</div>
+    ${chips}
+</div>`;
     });
 }
 }
