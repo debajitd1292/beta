@@ -96,7 +96,7 @@ body {
     border: 1px solid rgba(255,255,255,0.15);
 }
 
-.info-bar {		/* ✅ HOD/AIC Sec */
+.info-bar {			/* ✅ HOD/AIC Sec */
     background: linear-gradient(135deg, #1f4e79, #163a5f);
     color: white;
     margin: 10px;
@@ -119,14 +119,14 @@ body {
     width: 100%;
 }
 
-.row {			/* ✅ Side by Side */
+.row {			/* ✅ Side by side */
     display: flex;
     gap: 10px;
 }
 
 .field {
     flex: 1;
-    min-width: 0;
+    min-width: 0;   /* prevents overflow on mobile */
 }
 
 input, select {
@@ -143,6 +143,8 @@ select:focus, input:focus {
     outline: none;
     border: 2px solid gold;
 }
+
+/* ===== Mobile Optimization ===== */
 
 @media (max-width: 600px) {
     .row {
@@ -180,13 +182,13 @@ select:focus, input:focus {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.exec-header {		/* ✅ Exec */
+.exec-header {			/* ✅ Exec */
     color: #0d47a1;
     background: linear-gradient(135deg, rgba(13,71,161,0.15), rgba(13,71,161,0.05));
     border: 1px solid rgba(13,71,161,0.3);
 }
 
-.nonexec-header {	/* ✅ Non Exec */
+.nonexec-header {		/* ✅ Non Exec */
     color: #b71c1c;
     background: linear-gradient(135deg, rgba(183,28,28,0.15), rgba(183,28,28,0.05));
     border: 1px solid rgba(183,28,28,0.3);
@@ -199,6 +201,11 @@ select:focus, input:focus {
     border-radius:12px;
 
     margin-top:15px;
+}
+
+select:focus, input:focus {
+    outline:none;
+    border:2px solid gold;
 }
 
 .shift-title { font-weight:bold; margin-top:10px; }
@@ -291,7 +298,7 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     color: white;
 }
 
-.notice-alert {		/* ✅ Alerts */
+.notice-alert {			/* ✅ Alerts */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -316,13 +323,13 @@ body.dark .badge.N { background:#9ca3af; color:black; }
     animation: pulseGlow 2s infinite;
 }
 
-@keyframes pulseGlow {	/* ✅ Alerts */
+@keyframes pulseGlow {		/* ✅ Alerts */
     0%   { box-shadow: 0 0 6px rgba(183,28,28,0.2); }
     50%  { box-shadow: 0 0 16px rgba(183,28,28,0.5); }
     100% { box-shadow: 0 0 6px rgba(183,28,28,0.2); }
 }
 
-@keyframes blink {	/* ✅ Alerts Global */
+@keyframes blink {		/* ✅ Alerts Global */
     0% { opacity:1; }
     50% { opacity:0; }
     100% { opacity:1; }
@@ -648,7 +655,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v13";   // 🔁 update when CSV change
+const DATA_VERSION = "v14";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -700,28 +707,23 @@ Promise.all([
   fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
 ]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
 
-    if(!holidayText) console.warn("Holiday data missing");
-    if(!notesText) console.warn("Notes data missing");
-    if(!trainingText) console.warn("Training data missing");
-    if(!nonExecText) console.warn("Non-exec data missing");
-
-    if(!shiftText || shiftText.trim() === ""){
+if(!shiftText || shiftText.trim() === ""){
     document.getElementById("today").innerHTML =
     "<div style='color:red;font-weight:bold;'>SHIFT DATA NOT LOADED</div>";
     return;
 }
 
-    if(!holidayText) holidayText = "";
-    if(!notesText) notesText = "";
-    if(!trainingText) trainingText = "";
+if(!holidayText) holidayText = "";
+if(!notesText) notesText = "";
+if(!trainingText) trainingText = "";
 
-data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(","));
+data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
 
 header = data[0].map(x => x.trim());
 
 nonExecText = nonExecText || "";
 
-nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(","));
+nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
 nonExecHeader = nonExecData[0]?.map(x => x.trim()) || [];
 
 if(!header || header.length < 2){
@@ -732,12 +734,12 @@ if(!header || header.length < 2){
 selectedName = "";
 
 holidays = holidayText.split("\n").slice(1).map(r=>{
-let [d,t,n]=r.replace(/\r/g,"").split(",");
+let [d,t,n]=r.replace(/\r/g,"").split(/[,;]/);
 return {date:d?.trim(),type:t?.trim(),name:n?.trim()};
 });
 
 trainings = trainingText.split("\n").slice(1).map(r=>{
-let [d,n,t]=r.replace(/\r/g,"").split(",");
+let [d,n,t]=r.replace(/\r/g,"").split(/[,;]/);
 return {
     date: d?.trim(),
     name: n?.trim(),
@@ -746,7 +748,7 @@ return {
 });
 
 notes = notesText.split("\n").slice(1).map(r=>{
-let [d,t,n,m]=r.replace(/\r/g,"").split(",");
+let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
 return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
 });
 
@@ -980,6 +982,14 @@ if(isSpecialDay()){		/* ✅ Special Days */
 
 populateNames();
 
+/* AUTO SAVE */
+let savedName = localStorage.getItem("ppu_name");
+
+if(savedName){
+    selectedName = savedName;
+    document.getElementById("nameSelector").value = savedName;
+}
+
 /* SHOW NOTE */
 document.getElementById("todayNote").innerHTML = getTodayNote();
 
@@ -1121,15 +1131,9 @@ for(let i=1;i<data.length;i++){
     continue;
 }
 
-    if(shift === "OFF"){
-        if(!shifts["OFF"]) shifts["OFF"] = [];
-        shifts["OFF"].push({name:name, multi:false});
-        continue;
-    }
+let isMulti = shift.length>1;
 
-        let isMulti = shift.length > 1;
-
-        parseShift(shift).forEach(s=>{
+    parseShift(shift).forEach(s=>{
     if(!shifts[s]) shifts[s]=[];
     shifts[s].push({name:name,multi:isMulti});
     });
@@ -1150,14 +1154,7 @@ function getNonExecData(date){
         let shift=nonExecData[i][col]?.trim();
         if(!shift) continue;
 
-        // Handle OFF properly (same as exec)
-    if(shift === "OFF"){
-        if(!shifts["OFF"]) shifts["OFF"] = [];
-        shifts["OFF"].push({name:name, multi:false});
-        continue;
-    }
-
-        let isMulti = shift.length > 1;
+        let isMulti = shift.length>1;
 
         parseShift(shift).forEach(s=>{
             if(!shifts[s]) shifts[s]=[];
@@ -1170,12 +1167,13 @@ function getNonExecData(date){
 
 function render(id,date){
 
-    const DEBUG = false;
-    if(DEBUG) console.log("Render called for:", id, date);
+    console.log("Render called for:", id, date);
     let box=document.getElementById(id);
     box.innerHTML="";
 
-    if(header.indexOf(date)===-1){
+    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
+
+if(header.indexOf(date)===-1){
 
     let msg = (id === "today")
         ? "Shift schedule is not available for today"
@@ -1187,8 +1185,6 @@ function render(id,date){
 
     return;
 }
-
-box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
 
 let shifts=getData(date);
 
@@ -1320,7 +1316,7 @@ function renderTraining(){
         let [d1,m1] = da.split("-"); 
         let [d2,m2] = db.split("-"); 
 
-        let year = refDate.getFullYear();
+        let year = new Date().getFullYear();
 
         return new Date(year, m1-1, d1) - new Date(year, m2-1, d2); 
 
@@ -1444,20 +1440,17 @@ function onCategoryChange(){
     let category = document.getElementById("categorySelector").value;
     localStorage.setItem("selectedCategory", category);
 
-    // Reset selected name
     selectedName = "";
 
-    // Clear name dropdown completely
+    localStorage.removeItem("ppu_name");
+
     document.getElementById("nameSelector").innerHTML = '<option value="">Select Name</option>';
 
-    // Clear UI sections
     document.getElementById("today").innerHTML = "";
     document.getElementById("selected").innerHTML = "";
 
-    // Populate names based on category
     populateNames();
 
-    // Update UI
     refresh();
     renderNext7Days();
 }
@@ -1491,33 +1484,30 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=13')
+  navigator.serviceWorker.register('./service-worker.js?v=14')
     .then(() => console.log("Service Worker Registered"));
 }
 
-document.addEventListener("DOMContentLoaded", function(){	// ✅ AUTO RESTORE ON PAGE LOAD
+// ✅ AUTO RESTORE ON PAGE LOAD
+document.addEventListener("DOMContentLoaded", function(){
 
+    // 1. Restore category
     let savedCategory = localStorage.getItem("selectedCategory");
     if(savedCategory){
         document.getElementById("categorySelector").value = savedCategory;
     }
 
+    // 2. Load names based on category
     populateNames();
 
+    // 3. Restore name
     let savedName = localStorage.getItem("ppu_name");
-
     if(savedName){
-        const nameDropdown = document.getElementById("nameSelector");
-
-        let exists = Array.from(nameDropdown.options)
-                          .some(opt => opt.value === savedName);
-
-        if(exists){
-            selectedName = savedName;
-            nameDropdown.value = savedName;
-        }
+        selectedName = savedName;
+        document.getElementById("nameSelector").value = savedName;
     }
 
+    // 4. Refresh UI
     refresh();
     renderNext7Days();
 });
