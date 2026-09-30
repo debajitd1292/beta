@@ -1,4 +1,4 @@
-f<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -146,18 +146,25 @@ select:focus, input:focus {
 
 .shift-active-box {
     position: relative;
-    padding: 6px;
+    padding: 5px;
     border-radius: 10px;
 }
 
 .shift-active-box::before {
     content: "";
     position: absolute;
-    inset: -2px;
+
+    top: -0px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+
     border-radius: 12px;
+
     background: linear-gradient(90deg, transparent, #0d47a1, transparent);
     background-size: 200% 100%;
     animation: moveBorder 2s linear infinite;
+
     z-index: 0;
 }
 
@@ -577,17 +584,18 @@ body.dark .shift-active-box::before {
     background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(180,180,180,0.15) 40%,
-        rgba(220,220,220,0.45) 70%,
-        rgba(255,255,255,0.6) 85%,
-        rgba(255,255,255,0.75) 100%
+        rgba(200,200,200,0.2) 30%,
+        rgba(230,230,230,0.5) 55%,
+        rgba(255,255,255,0.85) 75%,
+        rgba(255,255,255,1) 90%,
+        rgba(255,255,255,0.9) 100%
     );
 
     background-size: 200% 100%;
     animation: moveBorder 2s linear infinite;
 
-    filter: blur(1.2px);
-    opacity: 0.65;
+    filter: blur(1px);
+    opacity: 0.9;
 }
 
 body.dark input,
@@ -718,6 +726,7 @@ let trainings = [];
 let header = [];
 let nonExecData = [];
 let nonExecHeader = [];
+let isDataLoaded = false;
 
 const nonExecSeniorityOrder = [
     "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib",
@@ -748,11 +757,11 @@ function sortBySeniority(list){
 }
 
 Promise.all([
-  fetch(shiftUrl,).then(r=>r.text()),
-  fetch(holidayUrl,).then(r=>r.text()),
-  fetch(notesUrl,).then(r=>r.text()),
-  fetch(trainingUrl,).then(r=>r.text()),
-  fetch(nonExecUrl,).then(r=>r.text())
+  fetch(shiftUrl).then(r=>r.text()),
+  fetch(holidayUrl).then(r=>r.text()),
+  fetch(notesUrl).then(r=>r.text()),
+  fetch(trainingUrl).then(r=>r.text()),
+  fetch(nonExecUrl).then(r=>r.text())
 ]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
 
 if(!shiftText || shiftText.trim() === ""){
@@ -1078,11 +1087,14 @@ if(isSpecialDay()){		/* ✅ Special Days */
     dateElem.style.fontWeight = "600";
 }
 
+let savedCategory = localStorage.getItem("selectedCategory");
+if(savedCategory){
+    document.getElementById("categorySelector").value = savedCategory;
+}
+
 populateNames();
 
-/* AUTO SAVE */
 let savedName = localStorage.getItem("ppu_name");
-
 if(savedName){
     selectedName = savedName;
     document.getElementById("nameSelector").value = savedName;
@@ -1588,52 +1600,55 @@ function onCategoryChange(){
     renderNext7Days();
 }
 
-function autoRefreshData(){
+function autoRefreshData(){ 
 
-    console.log("🔄 Auto refresh triggered");
+    console.log("🔄 Auto refresh triggered"); 
 
-    Promise.all([
-        fetch(shiftUrl, { cache: "no-store" }).then(r=>r.text()),
-        fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()),
-        fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()),
-        fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()),
-        fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text())
-    ]).then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => {
+    Promise.all([ 
+        fetch(shiftUrl, { cache: "no-store" }).then(r=>r.text()), 
+        fetch(holidayUrl, { cache: "no-store" }).then(r=>r.text()), 
+        fetch(notesUrl, { cache: "no-store" }).then(r=>r.text()), 
+        fetch(trainingUrl, { cache: "no-store" }).then(r=>r.text()), 
+        fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text()) 
+    ])
+    .then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => { 
+ 
+        data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/)); 
+        header = data[0].map(x => x.trim()); 
 
-        // 🔁 Update data (same logic as initial load)
-        data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
-        header = data[0].map(x => x.trim());
+        holidays = holidayText.split("\n").slice(1).map(r=>{ 
+            let [d,t,n]=r.replace(/\r/g,"").split(/[,;]/); 
+            return {date:d?.trim(),type:t?.trim(),name:n?.trim()}; 
+        }); 
 
-        holidays = holidayText.split("\n").slice(1).map(r=>{
-            let [d,t,n]=r.replace(/\r/g,"").split(/[,;]/);
-            return {date:d?.trim(),type:t?.trim(),name:n?.trim()};
-        });
+        trainings = trainingText.split("\n").slice(1).map(r=>{ 
+            let [d,n,t]=r.replace(/\r/g,"").split(/[,;]/); 
+            return {date:d?.trim(),name:n?.trim(),type:t?.trim()}; 
+        }); 
 
-        trainings = trainingText.split("\n").slice(1).map(r=>{
-            let [d,n,t]=r.replace(/\r/g,"").split(/[,;]/);
-            return {date:d?.trim(),name:n?.trim(),type:t?.trim()};
-        });
+        notes = notesText.split("\n").slice(1).map(r=>{ 
+            let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/); 
+            return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()}; 
+        }); 
 
-        notes = notesText.split("\n").slice(1).map(r=>{
-            let [d,t,n,m]=r.replace(/\r/g,"").split(/[,;]/);
-            return {date:d?.trim(),type:t?.trim(),name:n?.trim(),message:m?.trim()};
-        });
+        nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/)); 
+        nonExecHeader = nonExecData[0]?.map(x => x.trim()) || []; 
 
-        nonExecData = nonExecText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
-        nonExecHeader = nonExecData[0]?.map(x => x.trim()) || [];
+        document.getElementById("todayNote").innerHTML = getTodayNote(); 
 
-        // 🔁 UI refresh (reuse your existing functions)
-        document.getElementById("todayNote").innerHTML = getTodayNote();
+        refresh();                 
+        renderNext7Days();         
+        renderTraining();          
 
-        refresh();                 // Today shift + badge
-        renderNext7Days();         // next 7 days
-        renderTraining();          // training section
+        if(document.getElementById("datePicker").value){ 
+            renderSelected();      
+        } 
 
-        if(document.getElementById("datePicker").value){
-            renderSelected();      // selected date
-        }
+        calcHoliday();             
+    })
 
-        calcHoliday();             // GH/RH
+    .catch(err => {
+        console.error("Auto refresh failed:", err);
     });
 }
 
@@ -1669,30 +1684,6 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js?v=15')
     .then(() => console.log("Service Worker Registered"));
 }
-
-// ✅ AUTO RESTORE ON PAGE LOAD
-document.addEventListener("DOMContentLoaded", function(){
-
-    // 1. Restore category
-    let savedCategory = localStorage.getItem("selectedCategory");
-    if(savedCategory){
-        document.getElementById("categorySelector").value = savedCategory;
-    }
-
-    // 2. Load names based on category
-    populateNames();
-
-    // 3. Restore name
-    let savedName = localStorage.getItem("ppu_name");
-    if(savedName){
-        selectedName = savedName;
-        document.getElementById("nameSelector").value = savedName;
-    }
-
-    // 4. Refresh UI
-    refresh();
-    renderNext7Days();
-});
 
 // ⏱ Auto refresh every 2 minutes
 setInterval(() => {
