@@ -154,6 +154,14 @@ body {
     min-width: 0;   /* prevents overflow on mobile */
 }
 
+.alert-item {
+    margin-bottom: 8px;
+}
+
+.alert-item:last-child {
+    margin-bottom: 0;
+}
+
 #alertSection {
     margin: 10px;
     animation: fadeIn 0.3s ease;
@@ -368,6 +376,7 @@ body.dark .badge.N { background:#9ca3af; color:black; }
 
 .notice-alert {		/* ✅ Alerts */
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
@@ -383,7 +392,6 @@ body.dark .badge.N { background:#9ca3af; color:black; }
 
     color: #b71c1c;
 
-    /* improved gradient */
     background: linear-gradient(135deg, #fff5f5, #ffe3e3);
 
     border: 1px solid rgba(183, 28, 28, 0.25);
@@ -755,7 +763,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v17";   // 🔁 update when CSV change
+const DATA_VERSION = "v18";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -849,6 +857,7 @@ if(!shiftText || shiftText.trim() === ""){
 if(!holidayText) holidayText = "";
 if(!notesText) notesText = "";
 if(!trainingText) trainingText = "";
+if(!nonExecText) nonExecText = "";
 
 data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/));
 
@@ -953,7 +962,7 @@ const customAlerts = [
     dayOfWeek: 4,   // 0=Sun, 1=Mon ... 4=Thu
     fromHour: 9,
     toHour: 16,
-    text: "PPU Weekly Review Meeting<br>Today at 4 PM • CCR Conference Room",
+    text: "PPU Weekly Review Meeting today at 4 PM • CCR Conference Room",
     repeat: "weekly"
     },
 
@@ -1048,9 +1057,9 @@ function renderAlerts(){
 
     if(alerts.length > 0){
         alertBox.innerHTML = `
-            <div class="notice-alert">
-                ${alerts.map(a => `<div>⚠ ${a}</div>`).join("")}
-            </div>
+           <div class="notice-alert">
+               ${alerts.map(a => `<div class="alert-item">📢 ${a}</div>`).join("")}
+           </div>
         `;
         alertBox.style.display = "block";
 
@@ -1210,6 +1219,8 @@ function init(){
         document.getElementById("nameSelector").value = savedName; 
     } 
 
+    renderNext7Days();
+
     document.getElementById("todayNote").innerHTML = getTodayNote(); 
 
     updateHeaderDate();    
@@ -1220,7 +1231,6 @@ function init(){
 
     calcHoliday(); 
     refresh(); 
-    renderNext7Days()
 }
 
 function populateNames(){
@@ -1342,7 +1352,7 @@ for(let i=1;i<data.length;i++){
     continue;
 }
 
-let isMulti = shift.length>1;
+let isMulti = (shift !== "OFF" && shift.length > 1);
 
     parseShift(shift).forEach(s=>{
     if(!shifts[s]) shifts[s]=[];
@@ -1365,7 +1375,13 @@ function getNonExecData(date){
         let shift=nonExecData[i][col]?.trim();
         if(!shift) continue;
 
-        let isMulti = shift.length>1;
+        if(shift === "OFF"){
+            if(!shifts["OFF"]) shifts["OFF"] = [];
+            shifts["OFF"].push({name:name,multi:false});
+            continue;
+        }
+
+        let isMulti = (shift !== "OFF" && shift.length > 1);
 
         parseShift(shift).forEach(s=>{
             if(!shifts[s]) shifts[s]=[];
@@ -1382,20 +1398,24 @@ function render(id,date){
     let box=document.getElementById(id);
     box.innerHTML="";
 
-    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
+let shifts = (header.indexOf(date) === -1) ? {} : getData(date);
 
-if(header.indexOf(date)===-1){
+if(Object.keys(shifts).length === 0){
 
     let msg = (id === "today")
-        ? "No shift data available for today"
-        : "No shift data available for selected date";
+        ? "Shift schedule is not available for today"
+        : "Shift schedule is not available for selected date";
 
     box.innerHTML += `<div style="color:#777;font-weight:bold; margin-bottom:10px;">
     ${msg}
     </div>`;
 }
 
-let shifts = (header.indexOf(date) === -1) ? {} : getData(date);
+let hasExec = Object.values(shifts).some(arr => arr.length > 0);
+
+if(hasExec){
+    box.innerHTML += `<div class="section-header exec-header">Executive</div>`;
+}
 
 /* MAIN */
 ["A","B","C","G","OFF","L","T"].forEach(s=>{
@@ -1464,7 +1484,7 @@ box.innerHTML+=`<div class="shift-title">${shiftLabels[s]} (${list.length})</div
 
 let nonExecShifts = (nonExecHeader.indexOf(date) === -1) ? {} : getNonExecData(date);
 
-let hasNonExec = Object.keys(nonExecShifts).some(k => nonExecShifts[k]?.length);
+let hasNonExec = Object.values(nonExecShifts).some(arr => arr.length > 0);
 
 if(hasNonExec){
 
@@ -1617,22 +1637,24 @@ function renderTraining(){
 });
 }
 
-function renderNext7Days(){
+function renderNext7Days(){ 
+ 
+        let box = document.getElementById("next7Days"); 
+        if(!box) return; 
+ 
+        if(!header || header.length === 0 || !data || data.length === 0){
+            box.innerHTML = "<div style='color:#777;'>Loading...</div>";
+            return;
+        }
 
-    let box = document.getElementById("next7Days");
-    if(!box) return;
+        if(!selectedName){ 
+            box.innerHTML = "<div style='color:#777;'>Select name to view upcoming shifts</div>"; 
+            return; 
+        } 
+        let today = new Date();
+        let html = "";
 
-    if(!header || header.length === 0) return;
-    if(!data || data.length === 0) return;
-    if(!selectedName){
-        box.innerHTML = "<div style='color:#777;'>Select name to view upcoming shifts</div>";
-        return;
-    }
-
-    let today = new Date();
-    let html = "";
-
-    for(let i=0;i<7;i++){
+        for(let i=0;i<7;i++){
 
         let d = new Date(today);
         d.setDate(today.getDate() + i);
@@ -1649,7 +1671,7 @@ function renderNext7Days(){
 
         let shiftClass;
         if(rawShift === "-"){
-            shiftClass = "NA";   // new class
+            shiftClass = "NA";
         } else if(rawShift === "OFF"){
             shiftClass = "OFF";
         } else {
@@ -1742,7 +1764,6 @@ function autoRefreshData(){
 
         let alertBox = document.getElementById("alertSection");
         
-        updateHeaderDate();
 
         renderAlerts();
         updateTrainingHeader();
@@ -1792,7 +1813,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=17')
+  navigator.serviceWorker.register('./service-worker.js?v=18')
     .then(() => console.log("Service Worker Registered"));
 }
 
