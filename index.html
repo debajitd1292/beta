@@ -129,6 +129,20 @@ body {
     min-width: 0;   /* prevents overflow on mobile */
 }
 
+#alertSection {
+    margin: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity:0; transform: translateY(-4px); }
+    to { opacity:1; transform: translateY(0); }
+}
+
+#alertSection:empty {
+    display: none;
+}
+
 input, select {
     width: 100%;
     height: 40px;
@@ -349,7 +363,10 @@ body.dark .badge.N { background:#9ca3af; color:black; }
 
     border: 1px solid rgba(183, 28, 28, 0.25);
 
-    box-shadow: 0 4px 10px rgba(183,28,28,0.12);
+    box-shadow: 
+        0 4px 10px rgba(183,28,28,0.18),
+        0 0 12px rgba(183,28,28,0.25),
+        0 0 22px rgba(183,28,28,0.15);
 
     animation: pulseGlow 2s infinite;
 }
@@ -577,7 +594,10 @@ body.dark .notice-alert {		/* ✅ DARK Alerts */
 
     border: 1px solid rgba(255,138,128,0.25);
 
-    box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    box-shadow: 
+        0 4px 14px rgba(0,0,0,0.6),
+        0 0 10px rgba(255,80,80,0.25),
+        0 0 20px rgba(255,50,50,0.18);
 }
 
 body.dark .shift-active-box::before {
@@ -655,6 +675,8 @@ body.dark .badge {
     <div><strong>Area In-charge:</strong> Sh. Manoj Kumar Haloi</div>
 </div>
 
+<div id="alertSection" style="margin:10px;"></div>
+
 <div class="card">
 
     <div class="row">
@@ -677,8 +699,6 @@ body.dark .badge {
 
 <div class="card">
 
-    <div id="todayAlert"></div>
-
     <h3>Today's Shift</h3>
     <div id="today"></div>
 </div>
@@ -699,7 +719,7 @@ body.dark .badge {
 </div>
 
 <div class="card">
-    <h3>Training Plan For This Month</h3>
+    <h3 id="trainingHeader">Training Schedule</h3>
     <div id="trainingSection">Loading...</div>
 </div>
 
@@ -710,7 +730,7 @@ body.dark .badge {
 
 <script>
 
-const DATA_VERSION = "v15";   // 🔁 update when CSV change
+const DATA_VERSION = "v16";   // 🔁 update when CSV change
 
 const shiftUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/shift.csv?v=" + DATA_VERSION;
 const holidayUrl = "https://raw.githubusercontent.com/debajitd1292/beta/main/holiday.csv?v=" + DATA_VERSION;
@@ -730,7 +750,7 @@ let isDataLoaded = false;
 
 const nonExecSeniorityOrder = [
     "Lalit","Achuit","Bidyut","Shashadhar","Pranjal","Diganta","Akib",
-    "Op-DPK","Op-SAM","Op-NBN","Op-ANK","Op-ANP","Op-UTP","Op-GRD","Op-NYN"
+    "Op-Dipak","Op-Sampad","Op-Nabin","Op-Ankur","Op-Anup","Op-Utpal","Op-Gurudeep","Op-Nayan"
 ];
 
 const seniorityOrder = [
@@ -745,6 +765,37 @@ const shiftLabels = {
 "D":"Day Shift","N":"Night Shift",
 "L":"Leave","T":"Training/Tour"
 };
+
+function updateHeaderDate(){
+
+    let dateElem = document.getElementById("todayDate");
+    if(!dateElem) return;
+
+    let now = new Date();
+
+    dateElem.innerText = now.toDateString();
+
+    if(isSpecialDay()){
+        dateElem.style.color = "#ffd600";
+        dateElem.style.fontWeight = "600";
+    } else {
+        dateElem.style.color = "";
+        dateElem.style.fontWeight = "";
+    }
+}
+
+function updateTrainingHeader(){
+
+    let header = document.getElementById("trainingHeader");
+    if(!header) return;
+
+    let now = new Date();
+
+    let month = now.toLocaleString("default", { month: "long" });
+    let year = now.getFullYear();
+
+    header.innerText = `Training Schedule for ${month} ${year}`;
+}
 
 function sortBySeniority(list){
     return list.sort((a,b)=>{
@@ -963,6 +1014,46 @@ function getActiveAlerts(){
     return alerts;
 }
 
+function renderAlerts(){
+
+    let alertBox = document.getElementById("alertSection");
+    if(!alertBox) return;
+
+    let alerts = getActiveAlerts();
+
+    if(alerts.length > 0){
+        alertBox.innerHTML = `
+            <div class="notice-alert">
+                ${alerts.map(a => `<div>⚠ ${a}</div>`).join("")}
+            </div>
+        `;
+        alertBox.style.display = "block";
+
+        triggerAlertVibration(alerts);
+
+    } else {
+        alertBox.innerHTML = "";
+        alertBox.style.display = "none";
+    }
+}
+
+function triggerAlertVibration(alerts){
+
+    if(!("vibrate" in navigator)) return;
+
+    let newKey = alerts.join("|");
+    let oldKey = localStorage.getItem("lastAlertKey");
+
+    if(newKey && newKey !== oldKey){
+        navigator.vibrate([200,100,200,100,400]);
+        localStorage.setItem("lastAlertKey", newKey);
+    }
+
+    if(!newKey){
+        localStorage.removeItem("lastAlertKey");
+    }
+}
+
 function getTodayNote(){
     let today = new Date();
     let key = ("0"+today.getDate()).slice(-2) + "-" +
@@ -1073,53 +1164,38 @@ function initTheme(){
     });
 }
 
-function init(){
+function init(){ 
 
-initTheme();
+    initTheme(); 
 
-    document.getElementById("today").innerHTML = "Loading...";
+    document.getElementById("today").innerHTML = "Loading..."; 
 
-    let dateElem = document.getElementById("todayDate");
-    dateElem.innerText = new Date().toDateString();
+    updateHeaderDate();
 
-if(isSpecialDay()){		/* ✅ Special Days */
-    dateElem.style.color = "#ffd600";
-    dateElem.style.fontWeight = "600";
-}
+    let savedCategory = localStorage.getItem("selectedCategory"); 
+    if(savedCategory){ 
+        document.getElementById("categorySelector").value = savedCategory; 
+    } 
 
-let savedCategory = localStorage.getItem("selectedCategory");
-if(savedCategory){
-    document.getElementById("categorySelector").value = savedCategory;
-}
+    populateNames(); 
 
-populateNames();
+    let savedName = localStorage.getItem("ppu_name"); 
+    if(savedName){ 
+        selectedName = savedName; 
+        document.getElementById("nameSelector").value = savedName; 
+    } 
 
-let savedName = localStorage.getItem("ppu_name");
-if(savedName){
-    selectedName = savedName;
-    document.getElementById("nameSelector").value = savedName;
-}
+    document.getElementById("todayNote").innerHTML = getTodayNote(); 
 
-/* SHOW NOTE */
-document.getElementById("todayNote").innerHTML = getTodayNote();
+    updateHeaderDate();    
 
-// 🔴 Show alerts ABOVE TODAY title
-let alertBox = document.getElementById("todayAlert");
-let alerts = getActiveAlerts();
+    renderAlerts();
+    updateTrainingHeader(); 
+    renderTraining();
 
-if(alerts.length > 0){
-    alertBox.innerHTML = `
-    <div class="notice-alert">
-        ⚠ ${alerts.join(" | ")}
-    </div>`;
-} else {
-    alertBox.innerHTML = "";
-}
-
-refresh();
-calcHoliday();
-renderTraining();
-renderNext7Days();
+    refresh(); 
+    calcHoliday(); 
+    renderNext7Days(); 
 }
 
 function populateNames(){
@@ -1286,10 +1362,9 @@ function render(id,date){
 if(header.indexOf(date)===-1){
 
     let msg = (id === "today")
-        ? "No shift data available in CSV for today"
+        ? "No shift data available for today"
         : "No shift data available for selected date";
 
-    // ✅ Show message but DO NOT stop execution
     box.innerHTML += `<div style="color:#777;font-weight:bold; margin-bottom:10px;">
     ${msg}
     </div>`;
@@ -1545,7 +1620,6 @@ function renderNext7Days(){
 
         let rawShift = getShift(dateStr, selectedName) || "-";
 
-        // ✅ Handle "-" case
         let shiftClass;
         if(rawShift === "-"){
             shiftClass = "NA";   // new class
@@ -1612,6 +1686,8 @@ function autoRefreshData(){
         fetch(nonExecUrl, { cache: "no-store" }).then(r=>r.text()) 
     ])
     .then(([shiftText, holidayText, notesText, trainingText, nonExecText]) => { 
+
+        updateHeaderDate();
  
         data = shiftText.split("\n").map(r=>r.replace(/\r/g,"").split(/[,;]/)); 
         header = data[0].map(x => x.trim()); 
@@ -1636,9 +1712,16 @@ function autoRefreshData(){
 
         document.getElementById("todayNote").innerHTML = getTodayNote(); 
 
+        let alertBox = document.getElementById("alertSection");
+        
+        updateHeaderDate();
+
+        renderAlerts();
+        updateTrainingHeader();
+        renderTraining();
+
         refresh();                 
-        renderNext7Days();         
-        renderTraining();          
+        renderNext7Days();            
 
         if(document.getElementById("datePicker").value){ 
             renderSelected();      
@@ -1681,7 +1764,7 @@ function calcHoliday(){
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=15')
+  navigator.serviceWorker.register('./service-worker.js?v=16')
     .then(() => console.log("Service Worker Registered"));
 }
 
@@ -1690,7 +1773,6 @@ setInterval(() => {
     if(isDataLoaded) autoRefreshData();
 }, 120000);
 
-// 🔁 Refresh when user comes back to tab
 document.addEventListener("visibilitychange", function(){
     if(document.visibilityState === "visible" && isDataLoaded){
         autoRefreshData();
