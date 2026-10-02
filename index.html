@@ -637,18 +637,15 @@ body.dark .shift-active-box::before {
     background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(200,200,200,0.2) 30%,
-        rgba(230,230,230,0.5) 55%,
-        rgba(255,255,255,0.85) 75%,
-        rgba(255,255,255,1) 90%,
-        rgba(255,255,255,0.9) 100%
+        #b0bec5 45%,
+        #eceff1 50%,
+        #b0bec5 55%,
+        transparent 100%
     );
 
-    background-size: 200% 100%;
-    animation: moveBorder 2s linear infinite;
-
-    filter: blur(1px);
-    opacity: 0.9;
+    height: 2px;              /* thinner = sharper */
+    filter: none;             /* ❌ remove blur */
+    opacity: 1;               /* ensure crisp visibility */
 }
 
 body.dark input,
