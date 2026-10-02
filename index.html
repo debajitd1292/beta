@@ -636,16 +636,10 @@ body.dark .notice-alert {		/* ✅ DARK Alerts */
 body.dark .shift-active-box::before {
     background: linear-gradient(
         90deg,
-        transparent 0%,
-        #b0bec5 45%,
-        #eceff1 50%,
-        #b0bec5 55%,
-        transparent 100%
+        transparent,
+        #cfd8dc,   /* silver equivalent of blue */
+        transparent
     );
-
-    height: 2px;              /* thinner = sharper */
-    filter: none;             /* ❌ remove blur */
-    opacity: 1;               /* ensure crisp visibility */
 }
 
 body.dark input,
